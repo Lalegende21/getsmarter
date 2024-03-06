@@ -1,6 +1,7 @@
 package com.getsmarter.security;
 
 import com.getsmarter.entities.Admin;
+import com.getsmarter.entities.Jwt;
 import com.getsmarter.services.AdminService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -28,6 +29,7 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String token = null;
+        Jwt tokenInBDD = null;
         String username = null;
         boolean isTokenExpired = true;
 
@@ -35,11 +37,17 @@ public class JwtFilter extends OncePerRequestFilter {
         final String authorization = request.getHeader("Authorization");
         if(authorization != null && authorization.startsWith("Bearer ")){
             token = authorization.substring(7);
+            tokenInBDD = this.jwtService.tokenByValue(token);
             isTokenExpired = jwtService.isTokenExpired(token);
             username = jwtService.extractUsername(token);
         }
 
-        if(!isTokenExpired && username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        if(
+                !isTokenExpired
+                && tokenInBDD.getAdmin().getEmail().equals(username)
+                && tokenInBDD.getAdmin().getEmail().equals(username)
+                && SecurityContextHolder.getContext().getAuthentication() == null
+        ) {
             UserDetails userDetails = adminService.loadUserByUsername(username);
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);

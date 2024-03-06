@@ -50,6 +50,8 @@ public class ConfigurtionSecurityApplication {
                                                 .requestMatchers(HttpMethod.POST, "/admin/save-admin").permitAll()
                                                 .requestMatchers(HttpMethod.POST, "/admin/activation-admin").permitAll()
                                                 .requestMatchers(HttpMethod.POST, "/admin/connexion-admin").permitAll()
+                                                .requestMatchers(HttpMethod.POST, "/admin/reset-password").permitAll()
+                                                .requestMatchers(HttpMethod.POST, "/admin/update-password").permitAll()
                                                 //J'exige qu'il faut etre authentifie pour acceder aux requetes
                                                 .anyRequest().authenticated()
                         )

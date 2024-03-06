@@ -79,6 +79,46 @@ public class AdminController {
 
 
 
+    //Methode pour renitialiser le mot de passe
+    @PostMapping(path = "/reset-password")
+    public ResponseEntity<String> resetPassword(@RequestBody Map<String, String> activation) {
+        try {
+            this.adminService.resetPassword(activation);
+            return new ResponseEntity<>("Password reset successfully !", HttpStatus.CREATED);
+        }catch (Exception e) {
+            System.out.println(e);
+            return new ResponseEntity<>("Something went wrong: "+ e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    //Methode pour modifier le mot de passe
+    @PostMapping(path = "/update-password")
+    public ResponseEntity<String> updatePassword(@RequestBody Map<String, String> activation) {
+        try {
+            this.adminService.updatePassword(activation);
+            return new ResponseEntity<>("Password reset successfully !", HttpStatus.CREATED);
+        }catch (Exception e) {
+            System.out.println(e);
+            return new ResponseEntity<>("Something went wrong: "+ e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+
+    //Methode pour se deconnecter
+    @PostMapping(path = "/deconnexion-admin")
+    public ResponseEntity<String> deconnecterCompteAdmin() {
+        try {
+            this.jwtService.deconnexion();
+            return new ResponseEntity<>("Deconnexion successfully !", HttpStatus.CREATED);
+        }catch (Exception e) {
+            System.out.println(e);
+            return new ResponseEntity<>("Something went wrong: "+ e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
 
     //Methode pour recuperer tous les admins
     @GetMapping(path = "/get-all-admin")

@@ -164,4 +164,25 @@ public class AdminService implements UserDetailsService {
                 .findByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Admin not found with this identifiant !"));
     }
+
+
+    //Methode pour renitialiser le mot de passe
+    public void resetPassword(Map<String, String> parameters) {
+        Admin admin = (Admin) this.loadUserByUsername(parameters.get("email"));
+        this.validationService.saveValidation(admin);
+    }
+
+
+    //Methode pour modifier le mot de passe
+    public void updatePassword(Map<String, String> parameters) {
+        Admin admin = (Admin) this.loadUserByUsername(parameters.get("email"));
+        Validation validation = validationService.readByCode(parameters.get("code"));
+
+        if (validation.getAdmin().getEmail().equals(admin.getEmail())) {
+            //On crypte le mot de passe
+            String cryptPassword = this.passwordEncoder.encode(parameters.get("password"));
+            admin.setPassword(cryptPassword);
+            this.adminRepo.save(admin);
+        }
+    }
 }
