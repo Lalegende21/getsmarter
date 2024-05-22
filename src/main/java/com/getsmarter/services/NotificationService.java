@@ -15,11 +15,11 @@ public class NotificationService {
     public void sendNotification(Validation validation) {
         SimpleMailMessage mailMessage = new SimpleMailMessage();
         mailMessage.setFrom("delfredtene17@gmail.com");
-        mailMessage.setTo(validation.getAdmin().getEmail());
+        mailMessage.setTo(validation.getUser().getEmail());
         mailMessage.setSubject("Votre code d'activation !");
 
-        String text = String.format("Salut %s !\n Votre code d'activation est %s et expire dans 1 heure. A bientot !",
-                validation.getAdmin().getFirstname() +" "+validation.getAdmin().getLastname(),
+        String text = String.format("Salut %s !\n Votre code d'activation est %s et expire dans 30 minutes. A bientot !",
+                validation.getUser().getFirstname() +" "+validation.getUser().getLastname(),
                 validation.getCode());
         mailMessage.setText(text);
         javaMailSender.send(mailMessage);

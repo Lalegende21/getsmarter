@@ -1,23 +1,21 @@
 package com.getsmarter.controllers;
 
 import com.getsmarter.entities.Image;
+import com.getsmarter.response.UploadImageResult;
 import com.getsmarter.services.ImageService;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.Optional;
-import java.util.UUID;
-
 @RestController
 @AllArgsConstructor
+@CrossOrigin(origins = "http://localhost:4200",
+        allowedHeaders = "*",
+        methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE},
+        maxAge = 3600)
 @RequestMapping(path = "/image")
 public class ImageController {
 
@@ -26,10 +24,17 @@ public class ImageController {
 
     //Methode pour enregistrer une image
     @PostMapping(path = "/save-image")
-    public ResponseEntity<String> uploadImageToFolder(@RequestParam("image") MultipartFile file) {
+    public ResponseEntity<?> uploadImageForAdminToFolder(@RequestParam("image") MultipartFile file) {
         try {
-            String uploadImage = String.valueOf(imageService.uploadImageToFolder(file));
-            return ResponseEntity.status(HttpStatus.CREATED).body(uploadImage);
+            Image image = this.imageService.uploadImageToFolder(file);
+//            String uploadImage = String.valueOf(imageService.uploadImageToFolder(file));
+
+            UploadImageResult uploadImageResult = new UploadImageResult();
+            uploadImageResult.setName(image.getName());
+            uploadImageResult.setImageUrl(image.getFilePath());
+            uploadImageResult.setType(image.getType());
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(uploadImageResult);
         }catch (Exception e){
             System.out.println(e);
             return new ResponseEntity<>("Something went wrong: "+e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);

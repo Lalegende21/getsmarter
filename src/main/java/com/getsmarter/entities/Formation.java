@@ -1,17 +1,15 @@
 package com.getsmarter.entities;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.UUID;
+import java.util.Date;
+import java.util.List;
 
 @Entity
 @Data
@@ -22,30 +20,25 @@ public class Formation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name", nullable = false)
-    private String name;
+    @Column(name = "specialite", nullable = false, unique = true)
+    private String specialite;
 
-
-    @OneToOne
-    @JoinColumn(name = "code_formation_id", referencedColumnName = "id")
-    private CodeFormation codeFormation;
+    @ManyToOne
+    @JoinColumn(name = "formation_id", referencedColumnName = "id")
+    private SpecificiteFormation specificiteFormation;
 
     @Column(name = "price", nullable = false)
     private BigDecimal price;
 
-    @ManyToOne
-    @JoinColumn(name = "duree_id", referencedColumnName = "id")
-    private DureeFormation duree;
+    @Column(name = "periode", nullable = false)
+    private String periode;
 
-    @ManyToOne
-    @JoinColumn(name = "type_formation_id", referencedColumnName = "id")
-    private TypeFormation typeFormation;
+    private String image;
 
     @JsonIgnore
-    @OneToOne(mappedBy = "formation", cascade = CascadeType.ALL)
-    private Student student;
+    @OneToMany(mappedBy = "formation", cascade = {CascadeType.DETACH, CascadeType.MERGE})
+    private List<Student> student;
 
-    @JsonIgnore
     @Column(name = "created_at", nullable = false)
     @DateTimeFormat(pattern = "yyyy-MM-dd/HH-mm-ss")
     private LocalDateTime created_at;
@@ -54,5 +47,5 @@ public class Formation {
     @Column(name = "update_at")
     @UpdateTimestamp
     @DateTimeFormat(pattern = "yyyy-MM-dd/HH-mm-ss")
-    private Timestamp updated_at;
+    private Date updated_at;
 }

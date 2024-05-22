@@ -28,7 +28,7 @@ public class Validation {
     private String code;
 
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.DETACH})
-    private Admin admin;
+    private User user;
 
     @JsonIgnore
     @Column(name = "created_at", nullable = false)

@@ -1,19 +1,17 @@
 package com.getsmarter.entities;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.getsmarter.enums.Horaire;
 import com.getsmarter.enums.Sexe;
 import jakarta.persistence.*;
 import lombok.Data;
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Data
@@ -31,23 +29,34 @@ public class Student {
     private String lastname;
 
     @Column(name = "dob", nullable = false)
+    @DateTimeFormat(pattern = "yyyy-MM-dd/HH-mm-ss")
+//    private Date dob;
     private String dob;
 
     @Column(name = "matricule", nullable = false, unique = true)
     private String matricule;
 
-    @Column(name = "email", nullable = false, unique = true)
+    @Column(name = "email")
     private String email;
 
     @Column(name = "phonenumber", nullable = false)
     private String phonenumber;
 
-    @Column(name = "cni", nullable = false)
+    @Column(name = "cni")
     private String cni;
+
+    @Column(name = "horaire", nullable = false)
+    private String horaire;
+
+    @Column(name = "image")
+    private String image;
 
     @Enumerated(EnumType.STRING)       //Permet de stocker le sexe sous forme de chaine de caractere
     @Column(name = "sexe", nullable = false)
     private Sexe sexe;
+
+    @Column(name = "montant_Total")
+    private BigDecimal montantTotal;
 
     @Column(name = "montant_paye")
     private BigDecimal montantPaye;
@@ -55,43 +64,44 @@ public class Student {
     @Column(name = "montant_restant_a_payer")
     private BigDecimal montantRestantaPayer;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "student")
-    private List<Facture> factures;
 
-//    @OneToOne
-//    @JoinColumn(name = "image_id", referencedColumnName = "id")
-//    private Image image;
-
-    @OneToOne
-    @JoinColumn(name = "admin_id", referencedColumnName = "id")
-    private Admin admin;
+    @ManyToOne
+    @JoinColumn(name = "session_id", referencedColumnName = "id")
+    private Session session;
 
 
-    @OneToOne
+    @ManyToOne
+    @JoinColumn(name = "admin_id", referencedColumnName = "id", nullable = true)
+    private User user;
+
+
+    @ManyToOne
     @JoinColumn(name = "center_id", referencedColumnName = "id")
     private Center center;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "student", cascade = {CascadeType.MERGE, CascadeType.DETACH})
     private List<Paiement> paiement;
 
-    @OneToOne
-    @JoinColumn(name = "tutor_id", referencedColumnName = "id")
-    private Tutor tutor;
+    @JsonIgnore
+    @OneToMany(mappedBy = "student", cascade = {CascadeType.MERGE, CascadeType.DETACH})
+    private List<Tutor> tutor;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "formation_id", referencedColumnName = "id")
     private Formation formation;
 
-    @JsonIgnore
     @Column(name = "created_at", nullable = false)
     @DateTimeFormat(pattern = "yyyy-MM-dd/HH-mm-ss")
     private LocalDateTime created_at;
 
     @JsonIgnore
-    @Column(name = "update_at")
+    @Column(name = "updated_at")
     @UpdateTimestamp
     @DateTimeFormat(pattern = "yyyy-MM-dd/HH-mm-ss")
-    private Timestamp updated_at;
+    private Date updated_at;
 
+    private String fullName() {
+        return firstname + " " + lastname;
+    }
 }

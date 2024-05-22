@@ -38,11 +38,23 @@ public class Image {
 
 //    @JsonIgnore
 //    @OneToOne(mappedBy = "image", cascade = CascadeType.ALL)
-//    private Admin admin;
-//
-//    @JsonIgnore
-//    @OneToOne(mappedBy = "image", cascade = CascadeType.ALL)
-//    private Student student;
+//    private User user;
+
+
+    @OneToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE})
+    private Student student;
+
+    @OneToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE})
+    private Center center;
+
+    @OneToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE})
+    private Professor professor;
+
+    @OneToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE})
+    private Formation formation;
+
+    @OneToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE})
+    private Course course;
 
     @JsonIgnore
     @Column(name = "created_at", nullable = false)

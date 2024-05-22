@@ -2,6 +2,8 @@ package com.getsmarter.entities;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.getsmarter.enums.TypePaiement;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
@@ -24,29 +26,17 @@ public class Paiement {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name", nullable = false)
-    private String name;
-
     @Column(name = "montant", nullable = false)
     private BigDecimal montant;
-
-    @Column(name = "date_paiement", nullable = false)
-    @DateTimeFormat(pattern = "yyyy-MM-dd/HH-mm-ss")
-    private LocalDateTime datePaiement;
 
     @ManyToOne
     @JoinColumn(name = "student_id", referencedColumnName = "id")
     private Student student;
 
-    @ManyToOne
-    @JoinColumn(name = "type_paiement_id", referencedColumnName = "id")
+    @Column(name = "type_paiement", nullable = false)
+    @Enumerated(EnumType.STRING)
     private TypePaiement typePaiement;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "paiements", cascade = CascadeType.ALL)
-    private List<Facture> factures;
-
-    @JsonIgnore
     @Column(name = "created_at", nullable = false)
     @DateTimeFormat(pattern = "yyyy-MM-dd/HH-mm-ss")
     private LocalDateTime created_at;
@@ -55,6 +45,6 @@ public class Paiement {
     @Column(name = "update_at")
     @UpdateTimestamp
     @DateTimeFormat(pattern = "yyyy-MM-dd/HH-mm-ss")
-    private Timestamp updated_at;
+    private Date updated_at;
 
 }

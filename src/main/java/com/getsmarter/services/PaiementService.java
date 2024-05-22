@@ -1,70 +1,118 @@
 package com.getsmarter.services;
 
-import com.getsmarter.entities.Facture;
 import com.getsmarter.entities.Paiement;
 import com.getsmarter.entities.Student;
-import com.getsmarter.entities.TypePaiement;
-import com.getsmarter.repositories.FactureRepo;
 import com.getsmarter.repositories.PaiementRepo;
 import com.getsmarter.repositories.StudentRepo;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @AllArgsConstructor
 public class PaiementService {
 
     private final PaiementRepo paiementRepo;
-    private final FactureRepo factureRepo;
     private final StudentService studentService;
 
-    private final TypePaiementService typePaiementService;
+    private final StudentRepo studentRepo;
 
 
-    //Methode pour enregistrer un paiement
-    public Paiement savePaiement(Paiement paiement) {
+    public void savePaiement(Paiement paiement) {
 
-        LocalDateTime time = LocalDateTime.now();
-        BigDecimal montantPaye = paiement.getMontant();
-
-        Long idTypePaiement = paiement.getTypePaiement().getId();
-
-        TypePaiement typePaiement = this.typePaiementService.getTypePaiementById(paiement.getTypePaiement().getId());
-        String typePaiementStudent = typePaiement.getDescription();
-
-        paiement.setName(paiement.getName().toUpperCase());
-        paiement.setDatePaiement(time);
-        paiement.setCreated_at(LocalDateTime.now());
-
-
-        //Je recupere l'id du student pour avoir ses infos
-        Long id = paiement.getStudent().getId();
-        Student student = this.studentService.getStudentById(id);
-
-        if (student == null) {
-            throw new RuntimeException("Studen not found !");
+        Optional<Student> studentOptional = Optional.ofNullable(this.studentService.getStudentById(paiement.getStudent().getId()));
+        if (studentOptional.isEmpty()) {
+            throw new EntityNotFoundException("Student not found !");
         }
 
-        return this.paiementRepo.save(paiement);
+        if (studentOptional.isPresent()) {
+            BigDecimal studentMontantPaye = studentOptional.get().getMontantPaye();
+            BigDecimal studentMontantTotal = studentOptional.get().getMontantTotal();
+            System.out.println("Student montant total: "+studentMontantTotal);
+            System.out.println("student montant paye: " + studentMontantPaye);
+            BigDecimal studentMontantRestantaPayer = studentOptional.get().getMontantRestantaPayer();
+            System.out.println("student montant restant a payer: " + studentMontantRestantaPayer);
+
+            if (studentMontantPaye != null && studentMontantRestantaPayer != null) {
+
+                //Pour calculer le montant restant
+                BigDecimal subtrahend = paiement.getMontant() != null ? paiement.getMontant() : BigDecimal.ZERO;
+                BigDecimal montantRestantaPayer = studentMontantTotal.subtract(subtrahend.add(studentMontantPaye));
+
+                //On modifie les modalites dans le student
+                studentOptional.get().setMontantPaye(paiement.getMontant().add(studentMontantPaye));
+                studentOptional.get().setMontantRestantaPayer(montantRestantaPayer);
+
+                //On compare si le montant paye est deja egal ou superieur au montant total a paye
+                int comparaison = studentOptional.get().getMontantPaye().compareTo(studentMontantTotal);
+
+                if(comparaison > 0) {
+                    throw new RuntimeException("Le montant paye est superieur au montant total a payer!");
+                } else if(comparaison < 0) {
+                    this.studentRepo.save(studentOptional.get());
+                }
+                else {
+                    System.out.println("Felicitation vous avez paye integralement vos frais de formations!");
+                    this.studentRepo.save(studentOptional.get());
+                }
+
+                paiement.setCreated_at(LocalDateTime.now());
+                this.paiementRepo.save(paiement);
+
+            } else {
+                //Pour calculer le montant restant
+                BigDecimal subtrahend = paiement.getMontant() != null ? paiement.getMontant() : BigDecimal.ZERO;
+
+                studentOptional.get().setMontantPaye(paiement.getMontant());
+                studentOptional.get().setMontantRestantaPayer(studentMontantTotal.subtract(paiement.getMontant()));
+
+                System.out.println("Montant paye: " + studentOptional.get().getMontantPaye());
+                System.out.println("Montant restant a payer: " + studentOptional.get().getMontantRestantaPayer());
+                this.studentRepo.save(studentOptional.get());
+
+                paiement.setCreated_at(LocalDateTime.now());
+                this.paiementRepo.save(paiement);
+
+            }
+
+        }
     }
+
+
+
 
 
     //Methode pour recuperer tous les paiements
     public List<Paiement> getAllPaiement() {
-        return this.paiementRepo.findAll();
+        //Afficher les resultats de la base de donne par ordre decroissant
+        Sort sort = Sort.by(Sort.Direction.DESC, "id");
+
+        return this.paiementRepo.findAll(sort);
+    }
+
+
+    //Methode pour recuperer les etudiants ajoutes recemment (1 derniers jours)
+    public List<Paiement> getRecentlyAddedPaiement() {
+        // Définir la date de début pour récupérer les étudiants ajoutés récemment (par exemple, les 7 derniers jours)
+        // Logique pour déterminer la date de début appropriée (1 jours avant la date actuelle)
+        LocalDateTime startDate = LocalDate.now().minus(1, ChronoUnit.DAYS).atStartOfDay();
+
+        return this.paiementRepo.findRecentlyAddedPaiements(startDate);
     }
 
 
     //Methode pour recuperer un paiement par son id
     public Paiement getPaiementById(Long id) {
         Optional<Paiement> optionalPaiement = this.paiementRepo.findById(id);
-        return optionalPaiement.orElseThrow(() -> new RuntimeException("Paiement with id: " +id+ " not found !"));
+        return optionalPaiement.orElseThrow(() -> new EntityNotFoundException("Paiement with id: " +id+ " not found !"));
     }
 
 
@@ -73,10 +121,13 @@ public class PaiementService {
         Paiement updatePaiement = this.getPaiementById(id);
 
         if (updatePaiement.getId().equals(paiement.getId())) {
-            updatePaiement.setName(paiement.getName());
             updatePaiement.setMontant(paiement.getMontant());
-            updatePaiement.setDatePaiement(paiement.getDatePaiement());
             updatePaiement.setTypePaiement(paiement.getTypePaiement());
+            updatePaiement.setStudent(paiement.getStudent());
+
+            this.paiementRepo.save(updatePaiement);
+        }else {
+            throw new RuntimeException("Something went wrong !");
         }
     }
 

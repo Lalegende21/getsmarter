@@ -1,11 +1,10 @@
 package com.getsmarter.repositories;
 
-import com.getsmarter.entities.CodeFormation;
+import com.getsmarter.entities.SpecificiteFormation;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
-import java.util.UUID;
 
-public interface CodeFormationRepo extends JpaRepository<CodeFormation, Long> {
-    Optional<CodeFormation> findByCode(String code);
+public interface CodeFormationRepo extends JpaRepository<SpecificiteFormation, Long> {
+    Optional<SpecificiteFormation> findByCode(String code);
 }

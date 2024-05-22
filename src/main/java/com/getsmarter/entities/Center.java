@@ -10,6 +10,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -27,18 +29,20 @@ public class Center {
     @Column(name = "localisation", nullable = false)
     private String localisation;
 
-    @JsonIgnore
-    @OneToOne(mappedBy = "center", cascade = CascadeType.ALL)
-    private Student student;
+    private String image;
 
     @JsonIgnore
+    @OneToMany(mappedBy = "center", cascade = {CascadeType.ALL})
+    private List<Student> student;
+
+
     @Column(name = "created_at", nullable = false)
     @DateTimeFormat(pattern = "yyyy-MM-dd/HH-mm-ss")
     private LocalDateTime created_at;
 
     @JsonIgnore
     @Column(name = "update_at")
-    @UpdateTimestamp
     @DateTimeFormat(pattern = "yyyy-MM-dd/HH-mm-ss")
-    private Timestamp updated_at;
+    @UpdateTimestamp
+    private Date updated_at;
 }

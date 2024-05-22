@@ -1,7 +1,10 @@
 package com.getsmarter.services;
 
 import com.getsmarter.entities.Image;
+import com.getsmarter.entities.Student;
 import com.getsmarter.repositories.ImageRepo;
+import com.getsmarter.repositories.StudentRepo;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,15 +22,21 @@ public class ImageService {
     @Autowired
     private ImageRepo imageRepo;
 
+    @Autowired
+    private StudentRepo studentRepo;
 
-    private String FOLDER_PATH = "D:\\Mes programmes\\Spring Boot\\getsmarter\\src\\main\\java\\com\\getsmarter\\folder\\";
+
+//    private String FOLDER_PATH = "D:\\Mes programmes\\Spring Boot\\getsmarter\\src\\main\\java\\com\\getsmarter\\folder\\";
+
+    private String FOLDER_PATH = "D:\\Mes programmes\\Angular\\getsmarter\\src\\assets\\imagesDashboard\\";
 
 
 
     //Methode pour enregistrer une image
+    @Transactional
     public Image uploadImageToFolder(MultipartFile file) throws IOException {
         if (file.getSize() > 3 * 1024 * 1024) {
-            throw new IllegalArgumentException("Image size exceeds the limit of 3MB.");
+            throw new IllegalArgumentException("Le poids de l'image ne doit pas depasser les 3MB.");
         }
 
         String filePath = FOLDER_PATH + file.getOriginalFilename();
@@ -39,10 +48,12 @@ public class ImageService {
 
         Optional<Image> optionalImage = this.imageRepo.findByName(imageBuilder.getName());
         if (optionalImage.isPresent()) {
-            throw new RuntimeException("Cette image existe deja !");
+            this.deleteImageByName(imageBuilder.getName());
+            System.out.println("Image delete !");
         }
 
         imageBuilder.setCreated_at(LocalDateTime.now());
+
         Image fileData = imageRepo.save(imageBuilder);
 
         file.transferTo(new File(filePath));
@@ -123,8 +134,6 @@ public class ImageService {
 
 
 
-
-
     //Methode pour supprimer l'image par son id dans le dossier et la base de donnee
     public void deleteImageById(Long fileId) {
         // Supprimer l'image dans le dossier
@@ -132,6 +141,23 @@ public class ImageService {
 
         // Supprimer l'image dans la base de données
         imageRepo.deleteById(fileId);
+    }
+
+    public void deleteImageByName(String name) {
+        deleteImageInFolderByName(name);
+
+        imageRepo.deleteByName(name);
+    }
+
+
+    public void deleteImageInFolderByName(String name) {
+        Optional<Image> optionalImage = imageRepo.findByName(name);
+        if (optionalImage.isPresent()) {
+            Image fileDate = optionalImage.get();
+            String filePath = fileDate.getFilePath();
+            File file = new File(filePath);
+            file.delete();
+        }
     }
 
     //Methode pour supprimer une image par son id dans le dossier
