@@ -61,15 +61,29 @@ public class CenterController {
 
     //Methode pour lire tous les centres
     @GetMapping(path = "/get-all-center")
-    public List<Center> getAllCenter() {
-        return this.centerService.getAllCenter();
+    public ResponseEntity<?> getAllCenter() {
+        try {
+            List<Center> centers = this.centerService.getAllCenter();
+            return ResponseEntity.status(HttpStatus.OK).body(centers);
+        }catch (Exception e) {
+            System.out.println(e);
+            UserResponse userResponse = new UserResponse("Impossible de recuperer la liste des campus: "+e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(userResponse);
+        }
     }
 
 
 
     @GetMapping(path = "/get-center-frequently")
-    public List<Center> getAllStudentFrequently() {
-        return this.centerService.getRecentlyAddedCenters();
+    public ResponseEntity<?> getAllCenterFrequently() {
+        try {
+            List<Center> centers = this.centerService.getRecentlyAddedCenters();
+            return ResponseEntity.status(HttpStatus.OK).body(centers);
+        }catch (Exception e) {
+            System.out.println(e);
+            UserResponse userResponse = new UserResponse("Impossible de recuperer la liste des campus: "+e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(userResponse);
+        }
     }
 
 

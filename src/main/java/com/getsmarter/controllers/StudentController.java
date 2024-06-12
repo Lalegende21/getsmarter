@@ -6,10 +6,12 @@ import com.getsmarter.response.UserResponse;
 import com.getsmarter.services.ImageService;
 import com.getsmarter.services.StudentService;
 import lombok.AllArgsConstructor;
+import org.eclipse.angus.mail.util.MailConnectException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.MailException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -36,7 +38,12 @@ public class StudentController {
         try {
             this.studentService.saveStudent(student);
             return new ResponseEntity<>(student, HttpStatus.CREATED);
-        }catch (Exception e) {
+        }catch (MailException mailException) {
+            System.out.println(mailException.getMessage());
+            UserResponse userResponse = new UserResponse("Impossible d'enregistrer l'etudiant car nous n'avons pas pu envoyer un mail a l'etudiant, verifier votre connexion internet.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(userResponse);
+        }
+        catch (Exception e) {
             System.out.println(e);
             UserResponse userResponse = new UserResponse("Impossible d'enregistrer l'etudiant: "+e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(userResponse);
@@ -45,7 +52,7 @@ public class StudentController {
 
 
     @PostMapping(path = "/save-image/{id}")
-    public ResponseEntity<?> uploadImageCenter(@PathVariable Long id, @RequestParam("image") MultipartFile file) {
+    public ResponseEntity<?> uploadImageStudent(@PathVariable Long id, @RequestParam("image") MultipartFile file) {
         try {
             Student student = this.studentService.saveImageStudent(id, file);
 
@@ -59,14 +66,28 @@ public class StudentController {
 
 
     @GetMapping(path = "/get-all-student")
-    public List<Student> getAllStudent() {
-        return this.studentService.getAllStudent();
+    public ResponseEntity<?> getAllStudents() {
+        try {
+            List<Student> students = this.studentService.getAllStudent();
+            return new ResponseEntity<>(students, HttpStatus.OK);
+        }catch (Exception e){
+            System.out.println(e);
+            UserResponse userResponse = new UserResponse("Impossible de recuperer la liste des etudiants: "+e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(userResponse);
+        }
     }
 
 
     @GetMapping(path = "/get-student-frequently")
-    public List<Student> getAllStudentFrequently() {
-        return this.studentService.getRecentlyAddedStudents();
+    public ResponseEntity<?> getAllStudentsFrequently() {
+        try {
+            List<Student> students = this.studentService.getRecentlyAddedStudents();
+            return new ResponseEntity<>(students, HttpStatus.OK);
+        }catch (Exception e){
+            System.out.println(e);
+            UserResponse userResponse = new UserResponse("Impossible de recuperer la liste des etudiants: "+e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(userResponse);
+        }
     }
 
 
@@ -122,10 +143,12 @@ public class StudentController {
             this.studentService.updateStudent(id, student);
             return new ResponseEntity<>(student, HttpStatus.ACCEPTED);
         }catch (InvalidDataAccessApiUsageException invalidDataAccessApiUsageException) {
+            System.out.println(invalidDataAccessApiUsageException.getMessage());
             UserResponse userResponse = new UserResponse("Impossible de modifier l'etudiant: "+invalidDataAccessApiUsageException.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(userResponse);
         }
         catch (Exception e) {
+            System.out.println(e.getMessage());
             UserResponse userResponse = new UserResponse("Impossible de modifier l'etudiant: "+e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(userResponse);
         }

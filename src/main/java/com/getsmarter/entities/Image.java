@@ -40,6 +40,8 @@ public class Image {
 //    @OneToOne(mappedBy = "image", cascade = CascadeType.ALL)
 //    private User user;
 
+    @OneToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE})
+    private User user;
 
     @OneToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE})
     private Student student;
@@ -60,6 +62,11 @@ public class Image {
     @Column(name = "created_at", nullable = false)
     @DateTimeFormat(pattern = "yyyy-MM-dd/HH-mm-ss")
     private LocalDateTime created_at;
+
+    @PrePersist
+    public void prePersist() {
+        this.created_at = LocalDateTime.now();
+    }
 
     @JsonIgnore
     @Column(name = "update_at")

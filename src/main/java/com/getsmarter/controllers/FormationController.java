@@ -60,15 +60,29 @@ public class FormationController {
 
     //Methode pour lire toutes les specialites
     @GetMapping(path = "/get-all-formation")
-    public List<Formation> getAllFormations() {
-        return this.formationService.getAllFormations();
+    public ResponseEntity<?> getAllFormations() {
+        try {
+            List<Formation> formations = this.formationService.getAllFormations();
+            return ResponseEntity.status(HttpStatus.OK).body(formations);
+        }catch (Exception e){
+            System.out.println(e);
+            UserResponse userResponse = new UserResponse("Impossible de recuperer la liste des formations: "+e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(userResponse);
+        }
     }
 
 
 
     @GetMapping(path = "/get-formation-frequently")
-    public List<Formation> getAllFormationFrequently() {
-        return this.formationService.getRecentlyAddedFormations();
+    public ResponseEntity<?> getAllFormationsFrequently() {
+        try {
+            List<Formation> formations = this.formationService.getRecentlyAddedFormations();
+            return ResponseEntity.status(HttpStatus.OK).body(formations);
+        }catch (Exception e){
+            System.out.println(e);
+            UserResponse userResponse = new UserResponse("Impossible de recuperer la liste des formations: "+e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(userResponse);
+        }
     }
 
 

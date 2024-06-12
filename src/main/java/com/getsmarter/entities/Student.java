@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.getsmarter.enums.Horaire;
 import com.getsmarter.enums.Sexe;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -14,7 +14,10 @@ import java.util.Date;
 import java.util.List;
 
 @Entity
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "student")
 public class Student {
 
@@ -30,7 +33,6 @@ public class Student {
 
     @Column(name = "dob", nullable = false)
     @DateTimeFormat(pattern = "yyyy-MM-dd/HH-mm-ss")
-//    private Date dob;
     private String dob;
 
     @Column(name = "matricule", nullable = false, unique = true)
@@ -83,10 +85,6 @@ public class Student {
     @OneToMany(mappedBy = "student", cascade = {CascadeType.MERGE, CascadeType.DETACH})
     private List<Paiement> paiement;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "student", cascade = {CascadeType.MERGE, CascadeType.DETACH})
-    private List<Tutor> tutor;
-
     @ManyToOne
     @JoinColumn(name = "formation_id", referencedColumnName = "id")
     private Formation formation;
@@ -94,6 +92,11 @@ public class Student {
     @Column(name = "created_at", nullable = false)
     @DateTimeFormat(pattern = "yyyy-MM-dd/HH-mm-ss")
     private LocalDateTime created_at;
+
+    @PrePersist
+    public void prePersist() {
+        this.created_at = LocalDateTime.now();
+    }
 
     @JsonIgnore
     @Column(name = "updated_at")
@@ -104,4 +107,5 @@ public class Student {
     private String fullName() {
         return firstname + " " + lastname;
     }
+
 }

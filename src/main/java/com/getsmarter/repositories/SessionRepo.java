@@ -13,6 +13,6 @@ import java.util.List;
 public interface SessionRepo extends JpaRepository<Session, Long> {
 
     @Query("SELECT s FROM Session s WHERE s.created_at >= :startDate ORDER BY s.created_at DESC")
-    List<Session> findRecentlyAddedCenters(LocalDateTime startDate);
+    List<Session> findRecentlyAddedSessions(LocalDateTime startDate);
 
 }

@@ -39,17 +39,30 @@ public class PaiementContrroller {
 
 
     @GetMapping(path = "/get-all-paiement")
-    public List<Paiement> getAllPaiement() {
-        return this.paiementService.getAllPaiement();
+    public ResponseEntity<?> getAllPaiements() {
+        try {
+            List<Paiement> paiements = this.paiementService.getAllPaiement();
+            return ResponseEntity.status(HttpStatus.OK).body(paiements);
+        }catch (Exception e) {
+            System.out.println(e);
+            UserResponse userResponse = new UserResponse("Impossible de recuperer la liste de paiements: "+e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(userResponse);
+        }
     }
 
 
 
     @GetMapping(path = "/get-paiement-frequently")
-    public List<Paiement> getAllPaiementtFrequently() {
-        return this.paiementService.getRecentlyAddedPaiement();
+    public  ResponseEntity<?> getAllPaiementFrequently() {
+        try {
+            List<Paiement> paiements = this.paiementService.getRecentlyAddedPaiement();
+            return ResponseEntity.status(HttpStatus.OK).body(paiements);
+        }catch (Exception e) {
+            System.out.println(e);
+            UserResponse userResponse = new UserResponse("Impossible de recuperer la liste de paiements: "+e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(userResponse);
+        }
     }
-
 
 
     @GetMapping(path = "/get-paiement/{id}")

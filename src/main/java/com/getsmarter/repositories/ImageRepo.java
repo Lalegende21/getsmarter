@@ -20,4 +20,6 @@ public interface ImageRepo extends JpaRepository<Image, Long> {
     Image findByFormation(Formation formation);
 
     Image findByCourse(Course course);
+
+    Image findByUser(User user);
 }

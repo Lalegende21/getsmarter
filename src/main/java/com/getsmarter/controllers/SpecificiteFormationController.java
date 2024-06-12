@@ -39,8 +39,15 @@ public class SpecificiteFormationController {
 
 
     @GetMapping(path = "/get-all-specificite-formation")
-    public List<SpecificiteFormation> getAllCodeFormation() {
-        return this.specificiteFormationService.getAllCode();
+    public ResponseEntity<?> getAllCodeFormations() {
+        try {
+            List<SpecificiteFormation> specificiteFormations = this.specificiteFormationService.getAllCode();
+            return new ResponseEntity<>(specificiteFormations, HttpStatus.OK);
+        }catch (Exception e) {
+            System.out.println(e);
+            UserResponse userResponse = new UserResponse("Impossible de recuperer la liste des specificites: "+e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(userResponse);
+        }
     }
 
 

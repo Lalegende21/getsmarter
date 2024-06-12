@@ -41,6 +41,11 @@ public class Paiement {
     @DateTimeFormat(pattern = "yyyy-MM-dd/HH-mm-ss")
     private LocalDateTime created_at;
 
+    @PrePersist
+    public void prePersist() {
+        this.created_at = LocalDateTime.now();
+    }
+
     @JsonIgnore
     @Column(name = "update_at")
     @UpdateTimestamp

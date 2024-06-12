@@ -2,6 +2,7 @@ package com.getsmarter.services;
 
 import com.getsmarter.entities.Student;
 import com.getsmarter.entities.Tutor;
+import com.getsmarter.repositories.StudentRepo;
 import com.getsmarter.repositories.TutorRepo;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
@@ -20,6 +21,8 @@ public class TutorService {
 
     private final TutorRepo tutorRepo;
 
+    private final StudentRepo studentRepo;
+
 
     //Methode pour enregistrer un tuteur
     public void saveTutor(Tutor tutor) {
@@ -30,10 +33,10 @@ public class TutorService {
         }
 
         //On verifie si un utilisateur avec le nom donne existe deja
-        Optional<Tutor> optionalTutorFullname = this.tutorRepo.findByFullname(tutor.getFullname());
-        if(optionalTutorFullname.isPresent()) {
-            throw new RuntimeException("Votre nom existe deja!");
-        }
+//        Optional<Tutor> optionalTutorFullname = this.tutorRepo.findByFullname(tutor.getFullname());
+//        if(optionalTutorFullname.isPresent()) {
+//            throw new RuntimeException("Votre nom existe deja!");
+//        }
 
         //On verifie si un utilisateur avec le numero de telephone donne existe deja
         Optional<Tutor> optionalTutorPhoneNumber = this.tutorRepo.findByPhonenumber(tutor.getPhonenumber());
@@ -43,6 +46,7 @@ public class TutorService {
 
         tutor.setCreated_at(LocalDateTime.now());
         this.tutorRepo.save(tutor);
+
     }
 
 
@@ -72,6 +76,37 @@ public class TutorService {
     }
 
 
+    //Methode pour ajouter un etudiant au tuteur
+    public void addStudentTotutor(Long id, Student student) {
+        Tutor tutor = this.getTutorById(id);
+        tutor.getStudents().add(student);
+        tutorRepo.save(tutor);
+    }
+
+    //Methode pour supprimer un etudiant au tuteur
+//    public void removeStudentToTutor(Long id, Student student) {
+//        Tutor tutor = this.getTutorById(id);
+//        tutor.getStudents().remove(student.getId());
+//        tutorRepo.save(tutor);
+//    }
+
+    public void removeStudentToTutor(Long tutorId, Long studentId) {
+        Tutor tutor = this.getTutorById(tutorId);
+        Student studentToRemove = tutor.getStudents().stream()
+                .filter(s -> s.getId().equals(studentId))
+                .findFirst()
+                .orElse(null);
+
+        if (studentToRemove != null) {
+            tutor.getStudents().remove(studentToRemove);
+            tutorRepo.save(tutor);
+        } else {
+            // Gérer le cas où le Student n'est pas trouvé dans la liste
+            throw new IllegalArgumentException("L'etudiant avec l'identifiant " + studentId + " pas trouve dans la liste des etudiant du tuteur.");
+        }
+    }
+
+
     //Methode pour faire la mise a jour des donnees d'un tuteur
     public void updateTutor(Long id, Tutor tutor) {
         Tutor updateTutor = this.getTutorById(id);
@@ -80,7 +115,6 @@ public class TutorService {
             updateTutor.setFullname(tutor.getFullname());
             updateTutor.setEmail(tutor.getEmail());
             updateTutor.setPhonenumber(tutor.getPhonenumber());
-            updateTutor.setStudent(tutor.getStudent());
             updateTutor.setTypeTutor(tutor.getTypeTutor());
             this.tutorRepo.save(updateTutor);
         } else {

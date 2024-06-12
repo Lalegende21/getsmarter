@@ -57,14 +57,28 @@ public class ProfessorController {
 
 
     @GetMapping(path = "/get-all-professor")
-    public List<Professor> getAllProfessor() {
-        return this.professorService.getAllProfessor();
+    public ResponseEntity<?> getAllProfessor() {
+        try {
+            List<Professor> professors = this.professorService.getAllProfessor();
+            return ResponseEntity.status(HttpStatus.OK).body(professors);
+        }catch (Exception e){
+            System.out.println(e);
+            UserResponse userResponse = new UserResponse("Impossible de recuperer la liste des professeurs: "+e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(userResponse);
+        }
     }
 
 
     @GetMapping(path = "/get-professor-frequently")
-    public List<Professor> getAllProfessorFrequently() {
-        return this.professorService.getRecentlyAddedProfessors();
+    public ResponseEntity<?> getAllProfessorsFrequently() {
+        try {
+            List<Professor> professors = this.professorService.getRecentlyAddedProfessors();
+            return ResponseEntity.status(HttpStatus.OK).body(professors);
+        }catch (Exception e){
+            System.out.println(e);
+            UserResponse userResponse = new UserResponse("Impossible de recuperer la liste des professeurs: "+e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(userResponse);
+        }
     }
 
 

@@ -1,39 +1,41 @@
 package com.getsmarter.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.getsmarter.enums.Statut;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Date;
 
+@Builder
+@Setter
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
-@Data
-@RequestMapping(path = "/professor")
-@Table(name = "course")
-public class Course {
+public class Jwt {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name", unique = true)
-    private String name;
+    private String valeur;
 
-    @ManyToOne
-    @JoinColumn(name = "professor_id", referencedColumnName = "id")
-    private Professor professor;
+    private boolean desactive;
 
-    private String dureeCourse;
+    private boolean expire;
 
-    private String image;
+    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+    private RefreshToken refreshToken;
 
-//    @JsonIgnore
+
+    @ManyToOne(cascade = {CascadeType.DETACH})
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @JsonIgnore
     @Column(name = "created_at", nullable = false)
     @DateTimeFormat(pattern = "yyyy-MM-dd/HH-mm-ss")
     private LocalDateTime created_at;

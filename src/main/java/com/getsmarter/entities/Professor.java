@@ -36,9 +36,6 @@ public class Professor {
 
     private String image;
 
-    @ManyToOne
-    @JoinColumn(name = "session_id", referencedColumnName = "id")
-    private Session session;
 
     @JsonIgnore
     @OneToMany(mappedBy = "professor", cascade = {CascadeType.MERGE, CascadeType.PERSIST})
@@ -48,6 +45,11 @@ public class Professor {
     @Column(name = "created_at", nullable = false)
     @DateTimeFormat(pattern = "yyyy-MM-dd/HH-mm-ss")
     private LocalDateTime created_at;
+
+    @PrePersist
+    public void prePersist() {
+        this.created_at = LocalDateTime.now();
+    }
 
     @JsonIgnore
     @Column(name = "update_at")

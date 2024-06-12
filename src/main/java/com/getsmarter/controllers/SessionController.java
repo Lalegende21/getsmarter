@@ -44,7 +44,7 @@ public class SessionController {
             return new ResponseEntity<>(sessions, HttpStatus.OK);
         }catch (Exception e) {
             System.out.println(e);
-            UserResponse userResponse = new UserResponse(e.getMessage());
+            UserResponse userResponse = new UserResponse("Impossible de recuperer la liste des sessions" +e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(userResponse);
         }
     }
@@ -68,8 +68,15 @@ public class SessionController {
 
 
     @GetMapping(path = "/get-session-frequently")
-    public List<Session> getAllSessionFrequently() {
-        return this.sessionService.getRecentlyAddedSessions();
+    public ResponseEntity<?> getAllSessionsFrequently() {
+        try {
+            List<Session> sessions = this.sessionService.getRecentlyAddedSessions();
+            return new ResponseEntity<>(sessions, HttpStatus.OK);
+        }catch (Exception e) {
+            System.out.println(e);
+            UserResponse userResponse = new UserResponse("Impossible de recuperer la liste des sessions" +e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(userResponse);
+        }
     }
 
 

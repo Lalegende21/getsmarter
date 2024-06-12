@@ -23,7 +23,7 @@ public class Validation {
 
     private Instant expire;
 
-    private Instant activation;
+//    private Instant activation;
 
     private String code;
 
@@ -34,6 +34,11 @@ public class Validation {
     @Column(name = "created_at", nullable = false)
     @DateTimeFormat(pattern = "yyyy-MM-dd/HH-mm-ss")
     private LocalDateTime created_at;
+
+    @PrePersist
+    public void prePersist() {
+        this.created_at = LocalDateTime.now();
+    }
 
     @JsonIgnore
     @Column(name = "update_at")

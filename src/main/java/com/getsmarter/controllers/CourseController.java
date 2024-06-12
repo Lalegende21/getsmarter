@@ -1,14 +1,18 @@
 package com.getsmarter.controllers;
 
+import com.getsmarter.dto.StartCourseDto;
 import com.getsmarter.entities.Center;
 import com.getsmarter.entities.Course;
 import com.getsmarter.entities.Student;
 import com.getsmarter.response.UserResponse;
 import com.getsmarter.services.CourseService;
 import lombok.AllArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.MailAuthenticationException;
+import org.springframework.mail.MailException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -40,12 +44,21 @@ public class CourseController {
 
 
     @PostMapping(path = "/change-status/{id}")
-    public ResponseEntity<?> changeCourseStatus(@PathVariable Long id) {
+    public ResponseEntity<?> changeCourseStatus(@PathVariable Long id, @RequestBody StartCourseDto startCourseDto) {
         try {
-             this.courseService.changeStatut(id);
+             this.courseService.changeStatut(id, startCourseDto);
              UserResponse userResponse = new UserResponse("Matiere demarree avec succes !");
              return ResponseEntity.status(HttpStatus.OK).body(userResponse);
-        }catch (Exception e) {
+        }catch (DataIntegrityViolationException dataIntegrityViolationException) {
+            System.out.println(dataIntegrityViolationException);
+            UserResponse userResponse = new UserResponse("Veuilez renseigner tous les champs car aucun champ ne peut etre vide !");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(userResponse);
+        }catch (MailException mailException) {
+            System.out.println(mailException);
+            UserResponse userResponse = new UserResponse("Impossible d'envoyer un mail a l'utilisateur, verifier l'adresse email du destinataire ou votre connexion internet.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(userResponse);
+        }
+        catch (Exception e) {
             System.out.println(e);
             UserResponse userResponse = new UserResponse("Impossible de demarrer la matiere: "+e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(userResponse);
@@ -53,31 +66,31 @@ public class CourseController {
     }
 
 
-    @PostMapping(path = "/save-image/{id}")
-    public ResponseEntity<?> uploadImageCenter(@PathVariable Long id, @RequestParam("image") MultipartFile file) {
-        try {
-            Course course = this.courseService.saveImageCenter(id, file);
-
-            return ResponseEntity.status(HttpStatus.CREATED).body(course);
-        }catch (Exception e){
-            System.out.println(e);
-            UserResponse userResponse = new UserResponse("Impossible d'enregistrer l'image: "+e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(userResponse);
-        }
-    }
-
-
     @GetMapping(path = "/get-all-course")
-    public List<Course> getAllCourse() {
-        return this.courseService.getAllCourse();
+    public ResponseEntity<?> getAllCourse() {
+        try {
+            List<Course> courses = this.courseService.getAllCourse();
+            return ResponseEntity.status(HttpStatus.OK).body(courses);
+        }catch (Exception e) {
+            System.out.println(e);
+            UserResponse userResponse = new UserResponse("Impossible de recuperer la liste des matieres: "+e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(userResponse);
+        }
     }
 
 
 
 
     @GetMapping(path = "/get-course-frequently")
-    public List<Course> getAllCourseFrequently() {
-        return this.courseService.getRecentlyAddedCourses();
+    public ResponseEntity<?> getAllCourseFrequently() {
+        try {
+            List<Course> courses = this.courseService.getRecentlyAddedCourses();
+            return ResponseEntity.status(HttpStatus.OK).body(courses);
+        }catch (Exception e) {
+            System.out.println(e);
+            UserResponse userResponse = new UserResponse("Impossible de recuperer la liste des matieres: "+e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(userResponse);
+        }
     }
 
 

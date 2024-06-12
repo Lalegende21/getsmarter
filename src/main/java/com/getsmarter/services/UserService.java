@@ -1,14 +1,14 @@
 package com.getsmarter.services;
 
-import com.getsmarter.entities.User;
-import com.getsmarter.entities.Role;
-import com.getsmarter.entities.Validation;
+import com.getsmarter.entities.*;
 import com.getsmarter.enums.TypeRole;
 import com.getsmarter.mails.EmailService;
+import com.getsmarter.repositories.ImageRepo;
+import com.getsmarter.repositories.JwtRepo;
 import com.getsmarter.repositories.RoleRepository;
 import com.getsmarter.repositories.UserRepo;
-import com.getsmarter.response.UserResponse;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.mail.MailException;
@@ -17,9 +17,13 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -32,18 +36,22 @@ public class UserService implements UserDetailsService {
 
     private RoleRepository roleRepository;
 
+    private JwtRepo jwtRepo;
+
     private ImageService imageService;
+
+    private ImageRepo imageRepo;
 
     private EmailService emailService;
 
-//    private BCryptPasswordEncoder passwordEncoder;
+    private BCryptPasswordEncoder passwordEncoder;
 
     private ValidationService validationService;
 
 
 
     //Methode pour enregistrer un user
-    public void saveAdmin(User user) {
+    public void saveUser(User user) {
 
         // On verifie si l'email contient le symbole @
         if (!user.getEmail().contains("@")){
@@ -68,13 +76,16 @@ public class UserService implements UserDetailsService {
         }
 
         //On crypte le mot de passe
-//        String cryptPassword = this.passwordEncoder.encode(user.getPassword());
-//        user.setPassword(cryptPassword);
+        String cryptPassword = this.passwordEncoder.encode(user.getPassword());
+        user.setPassword(cryptPassword);
 
         //On affecte le role a l'user
-        Role role = new Role();
-        role.setCreated_at(LocalDateTime.now());
-        role.setLibelle(TypeRole.ADMIN);
+        Role role = Role.builder()
+                .libelle(TypeRole.USER)
+                .created_at(LocalDateTime.now())
+                .build();
+//        role.setCreated_at(LocalDateTime.now());
+//        role.setLibelle(TypeRole.ADMIN);
 
         user.setRole(role);
         //On enregistre la date de creation de l'user
@@ -104,7 +115,7 @@ public class UserService implements UserDetailsService {
 
 
     //Methode pour tous les admins
-    public List<User> getAllAdmin() {
+    public List<User> getAllUser() {
         //Afficher les resultats de la base de donne par ordre decroissant
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
 
@@ -113,7 +124,7 @@ public class UserService implements UserDetailsService {
 
 
     //Methode pour recuperer un user par son id
-    public User getAdminById(Long id) {
+    public User getUserById(Long id) {
         Optional<User> admin = this.userRepo.findById(id);
         return admin.orElseThrow(() -> new RuntimeException("Utilisateur avec l'identifiant: " +id+ " pas trouve!"));
     }
@@ -124,36 +135,86 @@ public class UserService implements UserDetailsService {
     }
 
 
+    //Methode pour recuperer les utilisateurs ajoutes recemment (1 derniers jours)
+    public List<User> getRecentlyAddedUsers() {
+        // Définir la date de début pour récupérer les étudiants ajoutés récemment (par exemple, les 7 derniers jours)
+        // Logique pour déterminer la date de début appropriée (1 jours avant la date actuelle)
+        LocalDateTime startDate = LocalDate.now().minus(1, ChronoUnit.DAYS).atStartOfDay();
+
+        return this.userRepo.findRecentlyAddedUsers(startDate);
+    }
+
+
+    public User changeRoleUserToAdmin(Long id) {
+        Optional<User> userOptional = this.userRepo.findById(id);
+
+        if (userOptional.isEmpty()) {
+            throw new EntityNotFoundException("Aucun utilisateur avec cet identifiant trouve !");
+        }
+
+        userOptional.get().setRole(
+                Role.builder()
+                        .libelle(TypeRole.ADMIN)
+                        .created_at(LocalDateTime.now())
+                        .build());
+        this.userRepo.save(userOptional.get());
+        return userOptional.get();
+    }
+
+
+    public User changeRoleAdminToUser(Long id) {
+        Optional<User> userOptional = this.userRepo.findById(id);
+
+        if (userOptional.isEmpty()) {
+            throw new EntityNotFoundException("Aucun utilisateur avec cet identifiant trouve !");
+        }
+
+        userOptional.get().setRole(
+                Role.builder()
+                        .libelle(TypeRole.USER)
+                        .created_at(LocalDateTime.now())
+                        .build()
+        );
+
+        this.userRepo.save(userOptional.get());
+        return userOptional.get();
+    }
+
+
 
     //Methode pour faire a mise a jour des donnees d'un user
-    public void updateAdmin(Long id, User user) {
-        User userUpdate = this.getAdminById(id);
+    public void updateUser(Long id, User user) {
+        User userUpdate = this.getUserById(id);
 
         if (userUpdate.getId().equals(user.getId())) {
             userUpdate.setFirstname(user.getFirstname());
             userUpdate.setLastname(user.getLastname());
             userUpdate.setEmail(user.getEmail());
-            userUpdate.setPassword(user.getPassword());
             userUpdate.setPhonenumber(user.getPhonenumber());
             userUpdate.setSexe(user.getSexe());
+            userUpdate.setCity(user.getCity());
+            userUpdate.setCountry(user.getCountry());
+            userUpdate.setDob(user.getDob());
 
             this.userRepo.save(userUpdate);
-        } else {
-            throw new RuntimeException("Incoherence entre l'id fourni et l'id de l'utilisateur a modifie!");
+        }else {
+            throw new RuntimeException("Incoherence entre l'identifiant fourni et l'identifiant de l'utilisateur a modifier!");
         }
     }
 
 
 
     //Methode pour supprimer tous les admins
-    public void deleteAllAdmin() {
+    public void deleteAllUser() {
         this.userRepo.deleteAll();
     }
 
 
 
     //Methode pour supprimer es admins par id
-    public void deleteAdminById(Long id) {
+    @Transactional
+    public void deleteUserById(Long id) {
+        this.jwtRepo.deleteByUserId(id);
         this.userRepo.deleteById(id);
     }
 
@@ -165,7 +226,7 @@ public class UserService implements UserDetailsService {
         }
 
         //On recupere l'user a activer
-        User user = this.userRepo.findById(validation.getUser().getId()).orElseThrow( () -> new RuntimeException("Utilisateur pas trouve!"));
+        User user = this.userRepo.findById(validation.getUser().getId()).orElseThrow( () -> new RuntimeException("L'utilisateur dont il faut activer le compte n'a pas ete trouve!"));
 
         //On envoie un mail pour certifier que le compte a ete active
         try {
@@ -193,27 +254,56 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("Aucun utilisateur trouve avec cet email!"));
     }
 
+    public void resetPassword(Map<String, String> parametres) {
+        User user = (User) this.loadUserByUsername(parametres.get("email"));
+        if(user == null) {
+            throw new EntityNotFoundException("Aucun utilisateur avec cette email trouve!");
+        }
+        this.validationService.saveValidation(user);
+    }
 
-    //Methode pour renitialiser le mot de passe
-//    public void resetPassword(Map<String, String> parameters) {
-//        User user = (User) this.loadUserByUsername(parameters.get("email"));
-//        if(user == null) {
-//            throw new EntityNotFoundException("Aucun utilisateur avec cette email trouve!");
-//        }
-//        this.validationService.saveValidation(user);
-//    }
+    public void updatePassword(Map<String, String> parametres) {
+        User user = (User) this.loadUserByUsername(parametres.get("email"));
+        Validation validation = this.validationService.readByCode(parametres.get("code"));
+
+        if(validation.getUser().getEmail().equals(user.getEmail())) {
+            //On crypte le mot de passe
+            String cryptPassword = this.passwordEncoder.encode(parametres.get("password"));
+            user.setPassword(cryptPassword);
+            this.userRepo.save(user);
+        }
+
+    }
 
 
-    //Methode pour modifier le mot de passe
-//    public void updatePassword(Map<String, String> parameters) {
-//        User user = (User) this.loadUserByUsername(parameters.get("email"));
-//        Validation validation = validationService.readByCode(parameters.get("code"));
-//
-//        if (validation.getUser().getEmail().equals(user.getEmail())) {
-//            //On crypte le mot de passe
-//            String cryptPassword = this.passwordEncoder.encode(parameters.get("password"));
-//            user.setPassword(cryptPassword);
-//            this.userRepo.save(user);
-//        }
-//    }
+    @Transactional
+    public User saveImageUser(Long id, MultipartFile imageFile) throws IOException {
+        // Vérifier la taille du fichier image
+        if (imageFile.getSize() > 5 * 1024 * 1024) {
+            throw new RuntimeException("Le poids de l'image ne doit pas depasser 5MB.");
+        }
+
+        // Définir l'URL de l'image sur l'entité Center
+        Optional<User> optionalUser = this.userRepo.findById(id);
+        if (optionalUser.isEmpty()) {
+            throw new EntityNotFoundException("Aucun etudiant avec cet identifiant trouve !");
+        }
+
+        // Vérifier si une image existe déjà pour ce center
+        Image existingImage = this.imageRepo.findByUser(optionalUser.get());
+        if (existingImage != null) {
+            // Supprimer l'image existante
+            this.imageRepo.delete(existingImage);
+        }
+
+        // Enregistrer la nouvelle image
+        Image newImage = this.imageService.uploadImageToFolder(imageFile);
+        newImage.setUser(optionalUser.get());
+        this.imageRepo.save(newImage);
+
+        // Enregistrer le center avec l'URL de la nouvelle image
+        optionalUser.get().setImage(newImage.getFilePath());
+        return this.userRepo.save(optionalUser.get());
+    }
+
 }

@@ -1,28 +1,20 @@
 package com.getsmarter.services;
 
-import com.getsmarter.entities.Center;
-import com.getsmarter.entities.Course;
-import com.getsmarter.entities.Image;
-import com.getsmarter.entities.Student;
+import com.getsmarter.dto.StartCourseDto;
+import com.getsmarter.entities.*;
 import com.getsmarter.enums.Statut;
 import com.getsmarter.mails.EmailScheduler;
 import com.getsmarter.mails.EmailService;
 import com.getsmarter.repositories.CourseRepo;
-import com.getsmarter.repositories.ImageRepo;
+import com.getsmarter.repositories.StartCourseRepo;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,8 +25,9 @@ public class CourseService {
     private final CourseRepo courseRepo;
     private final EmailScheduler emailScheduler;
     private final EmailService emailService;
-    private final ImageService imageService;
-    private final ImageRepo imageRepo;
+    private final StartCourseRepo startCourseRepo;
+//    private final ImageService imageService;
+//    private final ImageRepo imageRepo;
 
 
     //Methode pour enregistrer une cours
@@ -44,16 +37,16 @@ public class CourseService {
         if(courseOptional.isPresent()) {
             throw new RuntimeException("Cette matiere existe deja !");
         }
-        course.setStatut(Statut.DESACTIVER);
         course.setCreated_at(LocalDateTime.now());
         this.courseRepo.save(course);
     }
 
 
     //Methode pour changer le statut d'une matiere
-    public void changeStatut(Long id) {
+    public void changeStatut(Long id, StartCourseDto startCourseDto) {
         Optional<Course> optionalCourse = Optional.ofNullable(this.courseRepo.findById(id).orElseThrow(() -> new RuntimeException("Course not found")));
-        optionalCourse.get().setStatut(Statut.ACTIVER);
+//        optionalCourse.get().setStatut(Statut.ACTIVER);
+
 
         // Obtenir la date actuelle
         LocalDate currentDate = LocalDate.now();
@@ -72,8 +65,21 @@ public class CourseService {
         System.out.println("Professor email: "+ to);
         String subject = "Rappel sur le duree de cours! \uD83D\uDD52\n";
         String text;
+
+        StartCourse startCourse = StartCourse.builder()
+                .name(optionalCourse.get().getName())
+                .professor(optionalCourse.get().getProfessor().getFullName())
+                .duree(optionalCourse.get().getDureeCourse())
+                .statut(Statut.ACTIVER)
+                .startDate(currentDate.toString())
+                .endDate(dateDeFinDuCours.toString())
+                .session(startCourseDto.getSession())
+                .horaire(startCourseDto.getHoraire())
+                .created_at(LocalDateTime.now())
+                .build();
+
         if(dateDeFinDuCours.isAfter(currentDate)) {
-            System.out.println("IsAfter");
+            this.startCourseRepo.save(startCourse);
             text = "Bonjour Très cher Professeur " + optionalCourse.get().getProfessor().getFullName() +
                     "\n\n" +
                     "Nous tenons à vous informer qu'aujourd'hui le "+ currentDate +"⏳ marque le début du cours de " + nameCourse +
@@ -92,7 +98,7 @@ public class CourseService {
             System.out.println("Email sent successfully !");
             this.courseRepo.save(optionalCourse.get());
         } else {
-            System.out.println("IsBefore");
+            this.startCourseRepo.save(startCourse);
             text = "Cher Professeur ," + optionalCourse.get().getProfessor().getFullName() + " \uD83D\uDD52\n" +
                     "\n" +
                     "C'est la fin du temps aloue pour la matiere: " + nameCourse + " ⏳\n" +
@@ -104,38 +110,6 @@ public class CourseService {
             System.out.println("Email sent successfully !");
             this.courseRepo.save(optionalCourse.get());
         }
-    }
-
-
-
-    @Transactional
-    public Course saveImageCenter(Long id, MultipartFile imageFile) throws IOException {
-        // Vérifier la taille du fichier image
-        if (imageFile.getSize() > 5 * 1024 * 1024) {
-            throw new RuntimeException("Le poids de l'image ne doit pas depasser 5MB.");
-        }
-
-        // Définir l'URL de l'image sur l'entité Center
-        Optional<Course> optionalCourse = this.courseRepo.findById(id);
-        if (optionalCourse.isEmpty()) {
-            throw new EntityNotFoundException("Aucune matiere avec cet identifiant trouve !");
-        }
-
-        // Vérifier si une image existe déjà pour ce center
-        Image existingImage = this.imageRepo.findByCourse(optionalCourse.get());
-        if (existingImage != null) {
-            // Supprimer l'image existante
-            this.imageRepo.delete(existingImage);
-        }
-
-        // Enregistrer la nouvelle image
-        Image newImage = this.imageService.uploadImageToFolder(imageFile);
-        newImage.setCourse(optionalCourse.get());
-        this.imageRepo.save(newImage);
-
-        // Enregistrer le center avec l'URL de la nouvelle image
-        optionalCourse.get().setImage(newImage.getFilePath());
-        return this.courseRepo.save(optionalCourse.get());
     }
 
 
@@ -173,25 +147,25 @@ public class CourseService {
     public void updateCourse(Long id, Course course) {
         Course updateCourse = this.getCourseById(id);
 
-        if (updateCourse.getStatut() != null) {
-            if (updateCourse.getStatut().equals(Statut.ACTIVER)) {
-                throw new RuntimeException("Cette matiere a deja demarree et ne peut plus etre modifiee !");
-            } else if (updateCourse.getStatut().equals(Statut.TERMINER)) {
-                throw new RuntimeException("Cette matiere est deja terminee et ne peut plus etre modifiee !");
-            } else {
+//        if (updateCourse.getStatut() != null) {
+//            if (updateCourse.getStatut().equals(Statut.ACTIVER)) {
+//                throw new RuntimeException("Cette matiere a deja demarree et ne peut plus etre modifiee !");
+//            } else if (updateCourse.getStatut().equals(Statut.TERMINER)) {
+//                throw new RuntimeException("Cette matiere est deja terminee et ne peut plus etre modifiee !");
+//            } else {
                 if (updateCourse.getId().equals(course.getId())) {
                     updateCourse.setName(course.getName());
                     updateCourse.setProfessor(course.getProfessor());
                     updateCourse.setDureeCourse(course.getDureeCourse());
-                    updateCourse.setStatut(course.getStatut());
+//                    updateCourse.setStatut(course.getStatut());
                     this.courseRepo.save(updateCourse);
                 } else {
                     throw new RuntimeException("Incoherence entre l'id fourni et l'id de la matiere a modifie !");
                 }
-            }
-        } else {
-            throw new RuntimeException("Le statut du cours est inconnu.");
-        }
+//            }
+//        } else {
+//            throw new RuntimeException("Le statut du cours est inconnu.");
+//        }
     }
 
 
@@ -206,14 +180,16 @@ public class CourseService {
     public void deleteCourseById(Long id) {
         Optional<Course> optionalCourse = this.courseRepo.findById(id);
         if (optionalCourse.isPresent()) {
-            if (optionalCourse.get().getStatut().equals(Statut.TERMINER)) {
-                this.courseRepo.deleteById(id);
-            } else if(optionalCourse.get().getStatut().equals(Statut.DESACTIVER)) {
-                this.courseRepo.deleteById(id);
+//            if (optionalCourse.get().getStatut().equals(Statut.TERMINER)) {
+//                this.courseRepo.deleteById(id);
+//            } else if(optionalCourse.get().getStatut().equals(Statut.DESACTIVER)) {
+//                this.courseRepo.deleteById(id);
+//            }
+            this.courseRepo.deleteById(id);
             }
             else {
                 throw new RuntimeException("Cette matiere est en cours et n'est pas encore terminee!");
             }
-        }
+//        }
     }
 }

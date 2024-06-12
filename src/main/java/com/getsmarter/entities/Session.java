@@ -27,13 +27,15 @@ public class Session {
     @OneToMany(mappedBy = "session", cascade = {CascadeType.ALL})
     private List<Student> students;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "session", cascade = {CascadeType.ALL})
-    private List<Professor> professors;
 
     @Column(name = "created_at", nullable = false)
     @DateTimeFormat(pattern = "yyyy-MM-dd/HH-mm-ss")
     private LocalDateTime created_at;
+
+    @PrePersist
+    public void prePersist() {
+        this.created_at = LocalDateTime.now();
+    }
 
     @JsonIgnore
     @Column(name = "update_at")

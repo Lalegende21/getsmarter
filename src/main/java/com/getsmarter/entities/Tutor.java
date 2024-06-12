@@ -12,6 +12,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -40,19 +41,26 @@ public class Tutor {
     @Enumerated(EnumType.STRING)
     private TypeTutor typeTutor;
 
+    @OneToMany(cascade = {CascadeType.DETACH}, orphanRemoval = true)
+    @JoinColumn(name = "tutor_id")
+    private List<Student> students = new ArrayList<>();
 
-    @ManyToOne
-    @JoinColumn(name = "student_id", referencedColumnName = "id")
-    private Student student;
-
-    @JsonIgnore
     @Column(name = "created_at", nullable = false)
     @DateTimeFormat(pattern = "yyyy-MM-dd/HH-mm-ss")
     private LocalDateTime created_at;
 
-//    @JsonIgnore
+    @PrePersist
+    public void prePersist() {
+        this.created_at = LocalDateTime.now();
+    }
+
+    @JsonIgnore
     @Column(name = "updated_at")
     @UpdateTimestamp
     @DateTimeFormat(pattern = "yyyy-MM-dd/HH-mm-ss")
     private Date updated_at;
+
+//    public List<Student> getStudents() {
+//        return this.students;
+//    }
 }

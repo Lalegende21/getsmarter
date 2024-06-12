@@ -3,8 +3,10 @@ package com.getsmarter.entities;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.getsmarter.enums.Sexe;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.GrantedAuthority;
@@ -17,14 +19,16 @@ import java.util.stream.Collectors;
 
 @Entity
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Table(name = "user")
 public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-
+    
     @Column(name = "firstname", nullable = false)
     private String firstname;
 
@@ -40,12 +44,20 @@ public class User implements UserDetails {
     @Column(name = "phonenumber", nullable = false, unique = true)
     private String phonenumber;
 
+    private String country;
+
+    private String city;
+
+    private String dob;
+
     @Enumerated(EnumType.STRING)       //Permet de stocker le sexe sous forme de chaine de caractere
     @Column(name = "sexe", nullable = false)
     private Sexe sexe;
 
-    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE})
     private Role role;
+
+    private String image;
 
     private boolean actif = false;
 
@@ -54,9 +66,17 @@ public class User implements UserDetails {
     private List<Student> student;
 
     @JsonIgnore
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
+    private List<Jwt> jwtTokens;
+
     @Column(name = "created_at", nullable = false)
     @DateTimeFormat(pattern = "yyyy-MM-dd/HH-mm-ss")
     private LocalDateTime created_at;
+
+    @PrePersist
+    public void prePersist() {
+        this.created_at = LocalDateTime.now();
+    }
 
     @JsonIgnore
     @Column(name = "update_at")

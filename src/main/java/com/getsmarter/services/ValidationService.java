@@ -3,6 +3,7 @@ package com.getsmarter.services;
 import com.getsmarter.entities.User;
 import com.getsmarter.entities.Validation;
 import com.getsmarter.repositories.ValidationRepo;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -14,7 +15,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Random;
 
 
-
+@Transactional
 @AllArgsConstructor
 @Slf4j
 @Service
@@ -61,9 +62,9 @@ public class ValidationService {
 
     //Methode pour nettoyer la base de donnee
 //    @Scheduled(cron = "@daily")
-    @Scheduled(cron = "0 */30 * * * *")     //On nettoie la table jwt toutes les 30min dans la base de donnee
-    public void removeUselessJwt() {
-        log.info("Suppression des user dans la table validations à ¨{}", Instant.now());
-        this.validationRepo.deleteAll();
-    }
+//    @Scheduled(cron = "0 */1 * * * *")     //On nettoie la table jwt toutes les 30min dans la base de donnee
+//    public void removeUselessJwt() {
+//        log.info("Suppression des user dans la table validations à ¨{}", Instant.now());
+//        this.validationRepo.deleteAllByExpirationBefore(Instant.now());
+//    }
 }

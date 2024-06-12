@@ -125,7 +125,6 @@ public class ProfessorService {
             updateProfessor.setEmail(professor.getEmail());
             updateProfessor.setPhoneNumber(professor.getPhoneNumber());
             updateProfessor.setCni(professor.getCni());
-            updateProfessor.setSession(professor.getSession());
             updateProfessor.setCourse(professor.getCourse());
             this.professorRepo.save(updateProfessor);
         } else {

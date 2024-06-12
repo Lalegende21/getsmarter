@@ -3,7 +3,9 @@ package com.getsmarter.services;
 import com.getsmarter.entities.Center;
 import com.getsmarter.entities.Formation;
 import com.getsmarter.entities.Session;
+import com.getsmarter.entities.Student;
 import com.getsmarter.repositories.SessionRepo;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -41,7 +43,7 @@ public class SessionService {
         // Logique pour déterminer la date de début appropriée (1 jours avant la date actuelle)
         LocalDateTime startDate = LocalDate.now().minus(1, ChronoUnit.DAYS).atStartOfDay();
 
-        return this.sessionRepo.findRecentlyAddedCenters(startDate);
+        return this.sessionRepo.findRecentlyAddedSessions(startDate);
     }
 
 
@@ -57,7 +59,6 @@ public class SessionService {
         if (updateSession.getId().equals(session.getId())) {
             updateSession.setDateDebut(session.getDateDebut());
             updateSession.setStudents(session.getStudents());
-            updateSession.setProfessors(session.getProfessors());
             this.sessionRepo.save(updateSession);
         } else {
             throw new RuntimeException("Incoherence entre l'id fourni et l'id de la session a modifie !");
