@@ -102,7 +102,7 @@ public class FormationService {
     //Methode pour recuperer une fiiere par id
     public Formation getFormationById(Long id) {
         Optional<Formation> optionalSpecialite = this.formationRepo.findById(id);
-        return optionalSpecialite.orElseThrow(() -> new RuntimeException("Formation with id: " +id+ " not found !"));
+        return optionalSpecialite.orElseThrow(() -> new RuntimeException("Aucune formation avec cet identifiant: " +id+ " trouve !"));
     }
 
 

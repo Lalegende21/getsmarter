@@ -34,5 +34,7 @@ public class UserDto {
 
     private Role role;
 
+    private boolean actif;
+
     private LocalDateTime created_at;
 }

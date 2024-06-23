@@ -106,14 +106,14 @@ public class CenterService {
     //Methode pour recuper un centre par son id
     public Center getCenterById(Long id) {
         Optional<Center> optionalCenter = this.centerRepo.findById(id);
-        return optionalCenter.orElseThrow(() -> new RuntimeException("Center with id :" +id+ " not found !"));
+        return optionalCenter.orElseThrow(() -> new RuntimeException("Aucun centre avec l'identifiant: " +id+ " trouve !"));
     }
 
 
     //Methode pour recuperer un centre par son nom
     public Center getCenterByName(String name) {
         Optional<Center> optionalCenter = this.centerRepo.findByName(name);
-        return optionalCenter.orElseThrow(() -> new RuntimeException("Center with name: "+name+ " not found !"));
+        return optionalCenter.orElseThrow(() -> new RuntimeException("Aucun centre avec le nom: "+name+ " trouve !"));
     }
 
 

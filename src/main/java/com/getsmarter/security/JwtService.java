@@ -53,6 +53,7 @@ public class JwtService {
         User user = (User) this.userService.loadUserByUsername(username);
         User userEmail = this.userService.getByEmail(username);
         String role = String.valueOf(userEmail.getRole().getLibelle());
+        boolean status = userEmail.getStatus();
 
         this.disableTokens(user);
         Map<String, String> jwtMap = new HashMap<>( this.generateJwt(user));
@@ -75,6 +76,7 @@ public class JwtService {
                 .build();
         this.jwtRepo.save(jwt);
         jwtMap.put("Role", role);
+        jwtMap.put("status", String.valueOf(status));
         jwtMap.put(REFRESH, refreshToken.getValeur());
         return jwtMap;
     }

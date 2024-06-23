@@ -96,8 +96,8 @@ public class UserService implements UserDetailsService {
         //On envoie un message de confirmation par mail
         try {
             String email = user.getEmail();
-            String subject = "Confirmation d'enregistrement en tant qu'administrateur ! " +"\uD83C\uDF89";
-            String text = "Félicitations! " + "\uD83C\uDF89" +" Vous êtes désormais administrateur de la plateforme. Votre contribution et votre engagement sont précieux. Bienvenue dans l'équipe! " + "\uD83C\uDF1F";
+            String subject = "Confirmation d'enregistrement en tant qu'utilisateur de l'application ! " +"\uD83C\uDF89";
+            String text = "Félicitations! " + "\uD83C\uDF89" +" Vous êtes désormais un utilisateur de la plateforme. Votre contribution et votre engagement sont précieux. Bienvenue dans l'équipe! " + "\uD83C\uDF1F";
             this.emailService.sendEmail(email, subject, text);
         }catch (MailException e) {
             System.out.println(e);
@@ -237,7 +237,7 @@ public class UserService implements UserDetailsService {
             this.emailService.sendEmail(to, subject, text);
         }catch (MailException e) {
             System.out.println(e);
-            throw new RuntimeException("Impossible d'envoyer le mail, verifier votre connexion internet !");
+            throw new RuntimeException("Impossible d'envoyer le mail, verifier l'adresse mail du destinataire ou votre connexion internet !");
         }
 
         //On active le compte user

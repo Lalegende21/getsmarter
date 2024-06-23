@@ -44,14 +44,14 @@ public class StudentService {
     public void saveStudent(Student student) {
 
         // On verifie si l'email contient le symbole @
-        if (!student.getEmail().contains("@")){
-            throw new RuntimeException("Votre email est invalide!");
-        }
+//        if (!student.getEmail().contains("@")){
+//            throw new RuntimeException("Votre email est invalide!");
+//        }
 
         //On verifie si l'email contient un .
-        if (!student.getEmail().contains(".")){
-            throw new RuntimeException("Votre email est invalide!");
-        }
+//        if (!student.getEmail().contains(".")){
+//            throw new RuntimeException("Votre email est invalide!");
+//        }
 
         //On verifie si un utilisateur avec l'email donnee existe deja
         Optional<Student> optionalStudent = this.studentRepo.findByEmail(student.getEmail());
@@ -62,15 +62,15 @@ public class StudentService {
         //On verifie si un utilisateur avec le numero de telephone donnee existe deja
         Optional<Student> optionalStudentPhoneNumber = this.studentRepo.findByPhonenumber(student.getPhonenumber());
         if (optionalStudentPhoneNumber.isPresent()) {
-            throw new RuntimeException("Votre numero de telephone est déjà utilisée!");
+            throw new RuntimeException("Votre numero de telephone est déjà utilisé!");
         }
 
-        //On attribue un matricule au student
         //On recupere d'abord le code de la formation
         Long id = student.getFormation().getId();
         Formation formation = this.formationService.getFormationById(id);
         String code = formation.getSpecificiteFormation().getCode().toUpperCase();
 
+        //On attribue un matricule au student
         String matricule = this.generateMatricule(code);
         student.setMatricule(matricule);
 
@@ -85,11 +85,14 @@ public class StudentService {
         String duree = formation.getPeriode();
         String email = student.getEmail();
         String subject = "Confirmation d'enregistrement en tant qu'etudiant chez Getsmarter ! " +"\uD83C\uDF89";
-        String text = "Félicitations 🎉 Vous êtes maintenant enregistré comme étudiant de Getsmarter en spécialité "
+        String text = "Félicitations 🎉 Vous êtes maintenant enregistré comme étudiant(e) de Getsmarter en spécialité "
                 +specialite+ " Pour une durée de "
-                +duree+ " mois avec de 2 mois de stage."
+                +duree+ " mois avec de 2 mois de stage compris."
                 +" ! 📚 Profitez pleinement de cette nouvelle aventure! 🌟";
-        this.emailService.sendEmail(email, subject, text);
+
+        if (!student.getEmail().isEmpty()) {
+            this.emailService.sendEmail(email, subject, text);
+        }
 
         student.setMontantTotal(formation.getPrice());
         student.setCreated_at(LocalDateTime.now());

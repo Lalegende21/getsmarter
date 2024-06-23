@@ -1,10 +1,14 @@
 package com.getsmarter.mails;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+@Setter
+@Getter
 @Service
 public class EmailScheduler {
 
@@ -33,17 +37,4 @@ public class EmailScheduler {
         return "Mail sent successfully!";
     }
 
-
-    // Ajout des méthodes pour définir les valeurs des variables d'instance
-    public void setTo(String to) {
-        this.to = to;
-    }
-
-    public void setSubject(String subject) {
-        this.subject = subject;
-    }
-
-    public void setText(String text) {
-        this.text = text;
-    }
 }

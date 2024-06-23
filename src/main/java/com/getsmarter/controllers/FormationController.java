@@ -114,7 +114,7 @@ public class FormationController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(userResponse);
         }catch (InvalidDataAccessApiUsageException e) {
             System.out.println(e.getMessage());
-            UserResponse userResponse = new UserResponse("Veuilez renseigner tous les champs pour modifier cette formation!");
+            UserResponse userResponse = new UserResponse("Veuillez renseigner tous les champs pour modifier cette formation!");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(userResponse);
         }
         catch (Exception e) {

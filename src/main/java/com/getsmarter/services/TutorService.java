@@ -32,12 +32,6 @@ public class TutorService {
             throw new RuntimeException("Votre nom ne peut etre vide!");
         }
 
-        //On verifie si un utilisateur avec le nom donne existe deja
-//        Optional<Tutor> optionalTutorFullname = this.tutorRepo.findByFullname(tutor.getFullname());
-//        if(optionalTutorFullname.isPresent()) {
-//            throw new RuntimeException("Votre nom existe deja!");
-//        }
-
         //On verifie si un utilisateur avec le numero de telephone donne existe deja
         Optional<Tutor> optionalTutorPhoneNumber = this.tutorRepo.findByPhonenumber(tutor.getPhonenumber());
         if (optionalTutorPhoneNumber.isPresent()) {

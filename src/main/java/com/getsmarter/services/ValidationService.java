@@ -62,9 +62,9 @@ public class ValidationService {
 
     //Methode pour nettoyer la base de donnee
 //    @Scheduled(cron = "@daily")
-//    @Scheduled(cron = "0 */1 * * * *")     //On nettoie la table jwt toutes les 30min dans la base de donnee
-//    public void removeUselessJwt() {
-//        log.info("Suppression des user dans la table validations à ¨{}", Instant.now());
-//        this.validationRepo.deleteAllByExpirationBefore(Instant.now());
-//    }
+    @Scheduled(cron = "0 */1 * * * *")     //On nettoie la table validation toutes les 1 heures dans la base de donnee
+    public void removeUselessJwt() {
+        log.info("Suppression des user dans la table validations à ¨{}", Instant.now());
+        this.validationRepo.deleteAllByExpireBefore(Instant.now());
+    }
 }

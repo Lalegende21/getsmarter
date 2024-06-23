@@ -22,18 +22,18 @@ public class Course {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name", unique = true)
+    @Column(name = "name", unique = true, nullable = false)
     private String name;
 
     @ManyToOne
     @JoinColumn(name = "professor_id", referencedColumnName = "id")
     private Professor professor;
 
+    @Column(nullable = false)
     private String dureeCourse;
 
     private String image;
 
-//    @JsonIgnore
     @Column(name = "created_at", nullable = false)
     @DateTimeFormat(pattern = "yyyy-MM-dd/HH-mm-ss")
     private LocalDateTime created_at;

@@ -40,7 +40,7 @@ public class StudentController {
             return new ResponseEntity<>(student, HttpStatus.CREATED);
         }catch (MailException mailException) {
             System.out.println(mailException.getMessage());
-            UserResponse userResponse = new UserResponse("Impossible d'enregistrer l'etudiant car nous n'avons pas pu envoyer un mail a l'etudiant, verifier votre connexion internet.");
+            UserResponse userResponse = new UserResponse("Impossible d'enregistrer l'etudiant car nous n'avons pas pu envoyer un mail a l'etudiant, verifier l'adresse mail de votre destinataire ou votre connexion internet.");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(userResponse);
         }
         catch (Exception e) {

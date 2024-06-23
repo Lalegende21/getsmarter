@@ -60,7 +60,4 @@ public class Tutor {
     @DateTimeFormat(pattern = "yyyy-MM-dd/HH-mm-ss")
     private Date updated_at;
 
-//    public List<Student> getStudents() {
-//        return this.students;
-//    }
 }

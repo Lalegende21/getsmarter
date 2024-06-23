@@ -101,7 +101,7 @@ public class PaiementContrroller {
             return ResponseEntity.status(HttpStatus.OK).body(userResponse);
         }catch (Exception e) {
             System.out.println(e);
-            UserResponse userResponse = new UserResponse("Impossible de supprimer tous les etudiants: "+e.getMessage());
+            UserResponse userResponse = new UserResponse("Impossible de supprimer tous les paiements: "+e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(userResponse);
         }
     }

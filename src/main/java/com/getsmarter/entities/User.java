@@ -62,7 +62,7 @@ public class User implements UserDetails {
     private boolean actif = false;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.DETACH)
     private List<Student> student;
 
     @JsonIgnore
@@ -83,6 +83,10 @@ public class User implements UserDetails {
     @DateTimeFormat(pattern = "yyyy-MM-dd/HH-mm-ss")
     @UpdateTimestamp
     private Date updated_at;
+
+    public boolean getStatus() {
+        return this.actif;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

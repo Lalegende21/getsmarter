@@ -44,7 +44,7 @@ public class CourseService {
 
     //Methode pour changer le statut d'une matiere
     public void changeStatut(Long id, StartCourseDto startCourseDto) {
-        Optional<Course> optionalCourse = Optional.ofNullable(this.courseRepo.findById(id).orElseThrow(() -> new RuntimeException("Course not found")));
+        Optional<Course> optionalCourse = Optional.ofNullable(this.courseRepo.findById(id).orElseThrow(() -> new RuntimeException("Aucune matiere avec cette identifiant trouvee.")));
 //        optionalCourse.get().setStatut(Statut.ACTIVER);
 
 
@@ -139,7 +139,7 @@ public class CourseService {
     //Methode pour recuperer un cours par son id
     public Course getCourseById(Long id) {
         Optional<Course> optionalCourse = this.courseRepo.findById(id);
-        return optionalCourse.orElseThrow(() -> new EntityNotFoundException("Aucune matiere trouve avec cet identifiant !"));
+        return optionalCourse.orElseThrow(() -> new EntityNotFoundException("Aucune matiere trouvee avec cet identifiant !"));
     }
 
 
@@ -147,12 +147,6 @@ public class CourseService {
     public void updateCourse(Long id, Course course) {
         Course updateCourse = this.getCourseById(id);
 
-//        if (updateCourse.getStatut() != null) {
-//            if (updateCourse.getStatut().equals(Statut.ACTIVER)) {
-//                throw new RuntimeException("Cette matiere a deja demarree et ne peut plus etre modifiee !");
-//            } else if (updateCourse.getStatut().equals(Statut.TERMINER)) {
-//                throw new RuntimeException("Cette matiere est deja terminee et ne peut plus etre modifiee !");
-//            } else {
                 if (updateCourse.getId().equals(course.getId())) {
                     updateCourse.setName(course.getName());
                     updateCourse.setProfessor(course.getProfessor());
@@ -162,10 +156,6 @@ public class CourseService {
                 } else {
                     throw new RuntimeException("Incoherence entre l'id fourni et l'id de la matiere a modifie !");
                 }
-//            }
-//        } else {
-//            throw new RuntimeException("Le statut du cours est inconnu.");
-//        }
     }
 
 
@@ -180,11 +170,6 @@ public class CourseService {
     public void deleteCourseById(Long id) {
         Optional<Course> optionalCourse = this.courseRepo.findById(id);
         if (optionalCourse.isPresent()) {
-//            if (optionalCourse.get().getStatut().equals(Statut.TERMINER)) {
-//                this.courseRepo.deleteById(id);
-//            } else if(optionalCourse.get().getStatut().equals(Statut.DESACTIVER)) {
-//                this.courseRepo.deleteById(id);
-//            }
             this.courseRepo.deleteById(id);
             }
             else {

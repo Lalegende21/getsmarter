@@ -30,7 +30,7 @@ public class PaiementService {
 
         Optional<Student> studentOptional = Optional.ofNullable(this.studentService.getStudentById(paiement.getStudent().getId()));
         if (studentOptional.isEmpty()) {
-            throw new EntityNotFoundException("Student not found !");
+            throw new EntityNotFoundException("Aucun etudiant avec cet identifiant trouve !");
         }
 
         if (studentOptional.isPresent()) {
@@ -60,7 +60,7 @@ public class PaiementService {
                     this.studentRepo.save(studentOptional.get());
                 }
                 else {
-                    System.out.println("Felicitation vous avez paye integralement vos frais de formations!");
+                    System.out.println("Felicitation vous avez integralement paye vos frais de formations!");
                     this.studentRepo.save(studentOptional.get());
                 }
 

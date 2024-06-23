@@ -24,7 +24,7 @@ public class Session {
     private String dateDebut;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "session", cascade = {CascadeType.ALL})
+    @OneToMany(mappedBy = "session", cascade = {CascadeType.DETACH, CascadeType.MERGE})
     private List<Student> students;
 
 

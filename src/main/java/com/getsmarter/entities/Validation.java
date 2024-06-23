@@ -23,8 +23,6 @@ public class Validation {
 
     private Instant expire;
 
-//    private Instant activation;
-
     private String code;
 
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.DETACH})

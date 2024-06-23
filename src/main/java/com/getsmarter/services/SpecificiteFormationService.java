@@ -43,7 +43,7 @@ public class SpecificiteFormationService {
     //Methode pour recuperer un code par id
     public SpecificiteFormation getCodeById(Long id) {
         Optional<SpecificiteFormation> optionalCodeFormation = this.codeFormationRepo.findById(id);
-        return optionalCodeFormation.orElseThrow(() -> new RuntimeException("Code formation with id: "+id+ " not found"));
+        return optionalCodeFormation.orElseThrow(() -> new RuntimeException("Aucune specificite avec cet identifiant: "+id+ " trouvee!"));
     }
 
 

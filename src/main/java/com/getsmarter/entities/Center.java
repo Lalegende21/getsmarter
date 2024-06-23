@@ -32,7 +32,7 @@ public class Center {
     private String image;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "center", cascade = {CascadeType.ALL})
+    @OneToMany(mappedBy = "center", cascade = {CascadeType.DETACH, CascadeType.MERGE})
     private List<Student> student;
 
 

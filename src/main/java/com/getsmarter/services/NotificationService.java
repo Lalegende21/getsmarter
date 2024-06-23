@@ -14,7 +14,7 @@ public class NotificationService {
 
     public void sendNotification(Validation validation) {
         SimpleMailMessage mailMessage = new SimpleMailMessage();
-        mailMessage.setFrom("delfredtene17@gmail.com");
+        mailMessage.setFrom("getsmarterschool@gmail.com");
         mailMessage.setTo(validation.getUser().getEmail());
         mailMessage.setSubject("Votre code d'activation !");
 
