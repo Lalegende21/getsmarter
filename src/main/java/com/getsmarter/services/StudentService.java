@@ -1,5 +1,6 @@
 package com.getsmarter.services;
 
+import com.getsmarter.dto.AmountDto;
 import com.getsmarter.entities.*;
 import com.getsmarter.mails.EmailService;
 import com.getsmarter.repositories.FormationRepo;
@@ -18,10 +19,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @AllArgsConstructor
@@ -174,6 +172,30 @@ public class StudentService {
         LocalDateTime startDate = LocalDate.now().minus(1, ChronoUnit.DAYS).atStartOfDay();
 
         return this.studentRepo.findRecentlyAddedStudents(startDate);
+    }
+
+
+    //Methode pour accorder une reduction a l'etudiant
+    public Student getReduction(Long id, AmountDto amount) {
+        Student student = this.studentRepo.findById(id).orElseThrow(() -> new RuntimeException("Aucun etudiant avec cet identifiant trouve !"));
+
+        BigDecimal newAmountAPayer = BigDecimal.ZERO;
+        BigDecimal newAmountTotal = student.getMontantTotal().subtract(amount.getAmount());
+
+        if (Objects.isNull(student.getMontantRestantaPayer())) {
+            student.setMontantRestantaPayer(BigDecimal.ZERO);
+        } else {
+            if(Objects.isNull(student.getMontantPaye())) {
+                student.setMontantRestantaPayer(BigDecimal.ZERO);
+            } else {
+                newAmountAPayer = student.getMontantRestantaPayer().subtract(amount.getAmount());
+            }
+        }
+
+        student.setMontantTotal(newAmountTotal);
+        student.setMontantRestantaPayer(newAmountAPayer);
+
+        return this.studentRepo.save(student);
     }
 
 

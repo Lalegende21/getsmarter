@@ -107,9 +107,9 @@ public class ConfigurationAppicationSecurity {
 
                                         //student
                                         .requestMatchers(HttpMethod.GET, "/student/**").hasAnyRole("USER", "ADMIN")
-                                        .requestMatchers(HttpMethod.POST, "student/**").hasRole("ADMIN")
-                                        .requestMatchers(HttpMethod.PUT, "student/**").hasRole("ADMIN")
-                                        .requestMatchers(HttpMethod.DELETE, "student/**").hasRole("ADMIN")
+                                        .requestMatchers(HttpMethod.POST, "/student/**").hasRole("ADMIN")
+                                        .requestMatchers(HttpMethod.PUT, "/student/**").hasRole("ADMIN")
+                                        .requestMatchers(HttpMethod.DELETE, "/student/**").hasRole("ADMIN")
 
                                         //tutor
                                         .requestMatchers(HttpMethod.GET, "/tutor/**").hasAnyRole("USER", "ADMIN")

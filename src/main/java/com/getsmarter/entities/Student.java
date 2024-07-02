@@ -82,7 +82,7 @@ public class Student {
     private Center center;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "student", cascade = {CascadeType.REMOVE})
+    @OneToMany(mappedBy = "student", cascade = {CascadeType.DETACH, CascadeType.MERGE})
     private List<Paiement> paiement;
 
     @ManyToOne

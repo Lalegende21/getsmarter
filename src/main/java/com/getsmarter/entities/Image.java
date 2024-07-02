@@ -43,7 +43,7 @@ public class Image {
     @OneToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE})
     private User user;
 
-    @OneToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE})
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     private Student student;
 
     @OneToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE})

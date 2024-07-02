@@ -1,5 +1,6 @@
 package com.getsmarter.controllers;
 
+import com.getsmarter.dto.AmountDto;
 import com.getsmarter.entities.*;
 import com.getsmarter.response.UploadImageResult;
 import com.getsmarter.response.UserResponse;
@@ -15,6 +16,7 @@ import org.springframework.mail.MailException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -60,6 +62,19 @@ public class StudentController {
         }catch (Exception e){
             System.out.println(e);
             UserResponse userResponse = new UserResponse("Impossible d'enregistrer l'image: "+e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(userResponse);
+        }
+    }
+
+
+    @PostMapping(path = "/get-reduction/{id}")
+    public ResponseEntity<?> getStudentReduction(@PathVariable Long id, @RequestBody AmountDto amountDto) {
+        try {
+            Student student = this.studentService.getReduction(id, amountDto);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(student);
+        }catch (Exception e) {
+            System.out.println(e);
+            UserResponse userResponse = new UserResponse("Impossible d'accorder une reduction a cet etudiant: "+e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(userResponse);
         }
     }
