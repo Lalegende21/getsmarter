@@ -6,8 +6,12 @@ import com.getsmarter.repositories.StudentRepo;
 import com.getsmarter.repositories.TutorRepo;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -45,6 +49,8 @@ public class TutorService {
 
 
     //Methode pour recuperer tous les tuteurs
+    @Transactional(readOnly = true)
+    @Cacheable(value = "tutor")
     public List<Tutor> getAllTutor() {
         //Afficher les resultats de la base de donne par ordre decroissant
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
@@ -64,6 +70,8 @@ public class TutorService {
 
 
     //Methode pour recuperer un tuteur par id
+    @Transactional(readOnly = true)
+    @Cacheable(value = "tutor", key = "#id")
     public Tutor getTutorById(Long id) {
         Optional<Tutor> optionalTutor = this.tutorRepo.findById(id);
         return optionalTutor.orElseThrow(() -> new EntityNotFoundException("Aucun tuteur trouve avec cet identifiant: "+id));
@@ -102,6 +110,8 @@ public class TutorService {
 
 
     //Methode pour faire la mise a jour des donnees d'un tuteur
+    @Transactional(readOnly = true)
+    @CachePut(value = "tutor", key = "#tutor.id")
     public void updateTutor(Long id, Tutor tutor) {
         Tutor updateTutor = this.getTutorById(id);
 
@@ -118,12 +128,16 @@ public class TutorService {
 
 
     //Methode pour supprimer tous les tuteurs
+    @Transactional(readOnly = true)
+    @CacheEvict(value = "tutor", allEntries = true)
     public void deleteAllTutor() {
         this.tutorRepo.deleteAll();
     }
 
 
     //Methode pour supprimer les tuteurs par id
+    @Transactional(readOnly = true)
+    @CacheEvict(value = "tutor", key = "#id")
     public void deleteTutorById(Long id) {
         this.tutorRepo.deleteById(id);
     }

@@ -6,10 +6,13 @@ import com.getsmarter.entities.Student;
 import com.getsmarter.repositories.CenterRepo;
 import com.getsmarter.repositories.ImageRepo;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.multipart.MultipartFile;
@@ -83,6 +86,8 @@ public class CenterService {
 
 
     //Methode pour recuperer tous les centres
+    @Transactional(readOnly = true)
+    @Cacheable(value = "center")
     public List<Center> getAllCenter() {
         //Afficher les resultats de la base de donne par ordre decroissant
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
@@ -104,6 +109,7 @@ public class CenterService {
 
 
     //Methode pour recuper un centre par son id
+    @Cacheable(value = "center", key = "#id")
     public Center getCenterById(Long id) {
         Optional<Center> optionalCenter = this.centerRepo.findById(id);
         return optionalCenter.orElseThrow(() -> new RuntimeException("Aucun centre avec l'identifiant: " +id+ " trouve !"));
@@ -111,6 +117,7 @@ public class CenterService {
 
 
     //Methode pour recuperer un centre par son nom
+    @Cacheable(value = "center", key = "#name")
     public Center getCenterByName(String name) {
         Optional<Center> optionalCenter = this.centerRepo.findByName(name);
         return optionalCenter.orElseThrow(() -> new RuntimeException("Aucun centre avec le nom: "+name+ " trouve !"));
@@ -119,6 +126,8 @@ public class CenterService {
 
 
     //Methode pour faire la mise a jour des donnes du centre
+    @Transactional
+    @CachePut(value = "center", key = "#center.id")
     public void updateCenter(Long id, Center center) {
         Center updateCenter = this.getCenterById(id);
 
@@ -134,6 +143,8 @@ public class CenterService {
 
 
     //Methode pour supprimer tous les centres
+    @Transactional
+    @CacheEvict(value = "center", allEntries = true)
     public void deleteAllCenter() {
         this.centerRepo.deleteAll();
     }
@@ -141,6 +152,8 @@ public class CenterService {
 
 
     //Methode pour supprimer un centre par son id
+    @Transactional
+    @CacheEvict(value = "center", key = "#id")
     public void deleteCenterById(Long id) {
         this.centerRepo.deleteById(id);
     }

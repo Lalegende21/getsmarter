@@ -29,11 +29,6 @@ public class Role {
     @Enumerated(EnumType.STRING)       //Permet de stocker le role sous forme de chaine de caractere
     private TypeRole libelle;
 
-
-//    @ManyToOne(cascade = CascadeType.ALL)
-//    @JoinColumn(name = "user_id", referencedColumnName = "id")
-//    private User user;
-
     @JsonIgnore
     @Column(name = "created_at", nullable = false)
     @DateTimeFormat(pattern = "yyyy-MM-dd/HH-mm-ss")

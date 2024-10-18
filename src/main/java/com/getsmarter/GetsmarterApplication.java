@@ -12,6 +12,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -21,6 +22,7 @@ import java.util.Optional;
 
 @SpringBootApplication(exclude = {SecurityAutoConfiguration.class})
 @EnableScheduling
+@EnableCaching
 @AllArgsConstructor
 @CrossOrigin(origins = "http://localhost:4200")
 public class GetsmarterApplication implements CommandLineRunner {
@@ -51,6 +53,7 @@ public class GetsmarterApplication implements CommandLineRunner {
 				.created_at(LocalDateTime.now())
 				.build();
 
+		//On verifie si un utilisareur avec l'email existe deja
 		Optional<User> optionalAdmin = this.userRepo.findByEmail("ambangricky@gmail.com");
 		if (optionalAdmin.isPresent()){
 			this.userRepo.deleteByEmail("ambangricky@gmail.com");

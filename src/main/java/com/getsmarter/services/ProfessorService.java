@@ -7,10 +7,13 @@ import com.getsmarter.entities.Student;
 import com.getsmarter.repositories.ImageRepo;
 import com.getsmarter.repositories.ProfessorRepo;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.multipart.MultipartFile;
@@ -89,6 +92,8 @@ public class ProfessorService {
 
 
     //Methode pour recuperer tous les professeurs
+    @Transactional(readOnly = true)
+    @Cacheable(value = "professor")
     public List<Professor> getAllProfessor() {
         //Afficher les resultats de la base de donne par ordre decroissant
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
@@ -110,6 +115,8 @@ public class ProfessorService {
 
 
     //Methode pour recuperer un professeur par son id
+    @Transactional
+    @Cacheable(value = "professor", key = "#id")
     public Professor getProfessorById(Long id) {
         Optional<Professor> optionalProfessor = this.professorRepo.findById(id);
         return optionalProfessor.orElseThrow(() -> new EntityNotFoundException("Aucun professeur trouve avec cet identifiant !"));
@@ -117,6 +124,8 @@ public class ProfessorService {
 
 
     //Methode pour modifier un professor
+    @Transactional
+    @CachePut(value = "professor", key = "#professor.id")
     public void updateProfessor(Long id, Professor professor) {
         Professor updateProfessor = this.getProfessorById(id);
 
@@ -135,12 +144,16 @@ public class ProfessorService {
 
 
     //Methode pour supprimer tous les professors
+    @Transactional
+    @CacheEvict(value = "professor", allEntries = true)
     public void deleteAllProfessor() {
         this.professorRepo.deleteAll();
     }
 
 
     //Methode pour supprimer un professor par son id
+    @Transactional
+    @CacheEvict(value = "professor", key = "#id")
     public void deleteProfessorById(Long id) {
         this.professorRepo.deleteById(id);
     }

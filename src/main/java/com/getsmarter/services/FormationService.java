@@ -6,10 +6,13 @@ import com.getsmarter.entities.Image;
 import com.getsmarter.repositories.FormationRepo;
 import com.getsmarter.repositories.ImageRepo;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -79,6 +82,8 @@ public class FormationService {
 
 
     //Methode pour recuperer toutes les specialites
+    @Transactional(readOnly = true)
+    @Cacheable(value = "formation")
     public List<Formation> getAllFormations() {
         //Afficher les resultats de la base de donne par ordre decroissant
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
@@ -100,6 +105,8 @@ public class FormationService {
 
 
     //Methode pour recuperer une fiiere par id
+    @Transactional(readOnly = true)
+    @Cacheable(value = "formation", key = "#id")
     public Formation getFormationById(Long id) {
         Optional<Formation> optionalSpecialite = this.formationRepo.findById(id);
         return optionalSpecialite.orElseThrow(() -> new RuntimeException("Aucune formation avec cet identifiant: " +id+ " trouve !"));
@@ -108,6 +115,9 @@ public class FormationService {
 
 
     //Methode pour faire la mise a jour d'une speciaite
+    @Transactional
+
+    @CachePut(value = "formation", key = "#formation.id")
     public void updateFormation(Long id, Formation formation) {
         Formation updateFormation = this.getFormationById(id);
 
@@ -127,6 +137,8 @@ public class FormationService {
 
 
     //Methode pour supprimer toutes les speciaites
+    @Transactional
+    @CacheEvict(value = "formation", allEntries = true)
     public void deleteAllFrormation() {
         this.formationRepo.deleteAll();
     }
@@ -134,6 +146,8 @@ public class FormationService {
 
 
     //Methode pour supprimer ume speciaite par son id
+    @Transactional
+    @CacheEvict(value = "formation", key = "#id")
     public void deleteFormationById(Long id) {
         this.formationRepo.deleteById(id);
     }

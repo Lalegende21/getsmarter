@@ -3,8 +3,12 @@ package com.getsmarter.services;
 import com.getsmarter.entities.SpecificiteFormation;
 import com.getsmarter.repositories.CodeFormationRepo;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,6 +36,8 @@ public class SpecificiteFormationService {
 
 
     //Methode pour recuperer tous les codes
+    @Transactional(readOnly = true)
+    @Cacheable(value = "specificite")
     public List<SpecificiteFormation> getAllCode() {
         //Afficher les resultats de la base de donne par ordre decroissant
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
@@ -40,6 +46,8 @@ public class SpecificiteFormationService {
     }
 
 
+    @Transactional(readOnly = true)
+    @Cacheable(value = "specificte", key = "#id")
     //Methode pour recuperer un code par id
     public SpecificiteFormation getCodeById(Long id) {
         Optional<SpecificiteFormation> optionalCodeFormation = this.codeFormationRepo.findById(id);
@@ -49,6 +57,8 @@ public class SpecificiteFormationService {
 
 
     //Methode pour update un code
+    @Transactional
+    @CachePut(value = "specificte", key = "#specificite.id")
     public void updateCode(Long id, SpecificiteFormation specificiteFormation) {
         SpecificiteFormation updateCode = this.getCodeById(id);
 
@@ -65,6 +75,8 @@ public class SpecificiteFormationService {
 
 
     //Methode pour supprimer tous les codes
+    @Transactional
+    @CacheEvict(value = "specificite", allEntries = true)
     public void deleteAllCode() {
         this.codeFormationRepo.findAll();
     }
@@ -72,6 +84,8 @@ public class SpecificiteFormationService {
 
 
     //Methode pour supprimer un code par son id
+    @Transactional
+    @CacheEvict(value = "specificite", key = "#id")
     public void deleteCodeById(Long id) {
         this.codeFormationRepo.deleteById(id);
     }

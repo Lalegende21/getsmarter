@@ -8,8 +8,10 @@ import com.getsmarter.repositories.JwtRepo;
 import com.getsmarter.repositories.RoleRepository;
 import com.getsmarter.repositories.UserRepo;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
 import org.springframework.mail.MailException;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,6 +19,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -115,6 +118,8 @@ public class UserService implements UserDetailsService {
 
 
     //Methode pour tous les admins
+    @Transactional(readOnly = true)
+    @Cacheable(value = "user")
     public List<User> getAllUser() {
         //Afficher les resultats de la base de donne par ordre decroissant
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
@@ -124,11 +129,15 @@ public class UserService implements UserDetailsService {
 
 
     //Methode pour recuperer un user par son id
+    @Transactional(readOnly = true)
+    @Cacheable(value = "user", key = "#id")
     public User getUserById(Long id) {
         Optional<User> admin = this.userRepo.findById(id);
         return admin.orElseThrow(() -> new RuntimeException("Utilisateur avec l'identifiant: " +id+ " pas trouve!"));
     }
 
+    @Transactional(readOnly = true)
+    @Cacheable(value = "user", key = "#id")
     public User getByEmail(String email) {
         Optional<User> user = this.userRepo.findByEmail(email);
         return user.orElseThrow(() -> new EntityNotFoundException("Utilisateur avec l'email: " +email+ " pas trouve!"));
@@ -183,6 +192,8 @@ public class UserService implements UserDetailsService {
 
 
     //Methode pour faire a mise a jour des donnees d'un user
+    @Transactional(readOnly = true)
+    @CachePut(value = "user", key = "#user.id")
     public void updateUser(Long id, User user) {
         User userUpdate = this.getUserById(id);
 
@@ -205,6 +216,8 @@ public class UserService implements UserDetailsService {
 
 
     //Methode pour supprimer tous les admins
+    @Transactional(readOnly = true)
+    @CacheEvict(value = "user", allEntries = true)
     public void deleteAllUser() {
         this.userRepo.deleteAll();
     }
@@ -212,7 +225,8 @@ public class UserService implements UserDetailsService {
 
 
     //Methode pour supprimer es admins par id
-    @Transactional
+    @Transactional(readOnly = true)
+    @CacheEvict(value = "user", key = "#id")
     public void deleteUserById(Long id) {
         this.jwtRepo.deleteByUserId(id);
         this.userRepo.deleteById(id);

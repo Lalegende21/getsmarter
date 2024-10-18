@@ -7,10 +7,13 @@ import com.getsmarter.repositories.FormationRepo;
 import com.getsmarter.repositories.ImageRepo;
 import com.getsmarter.repositories.StudentRepo;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -152,6 +155,8 @@ public class StudentService {
 
 
     //Methode pour recuperer tous les students
+    @Transactional(readOnly = true)
+    @Cacheable(value = "student")
     public List<Student> getAllStudent() {
         //Afficher les resultats de la base de donne par ordre decroissant
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
@@ -159,6 +164,7 @@ public class StudentService {
         return this.studentRepo.findAll(sort);
     }
 
+    @Cacheable(value = "paiementByStudent")
     public List<Paiement> getPaiementByStudent(Long id) {
         Student student = this.studentRepo.findById(id).orElseThrow(() -> new RuntimeException("Aucun etudiant avec cet identifiant trouve !"));
         return student.getPaiement();
@@ -200,6 +206,8 @@ public class StudentService {
 
 
     //Methode pour recuperer un student par son id
+    @Transactional
+    @Cacheable(value = "student", key = "#id")
     public Student getStudentById(Long id) {
         Optional<Student> optionalStudent = this.studentRepo.findById(id);
         return optionalStudent.orElseThrow(() -> new RuntimeException("Aucun etudiant trouve avec cet identifiant: "+id));
@@ -207,6 +215,8 @@ public class StudentService {
 
 
     //Methode pour recupere un student par matricule
+    @Transactional
+    @Cacheable(value = "student", key = "#matricule")
     public Student getStudentByMatricule(String matricule) {
         Optional<Student> optionalStudent = this.studentRepo.findByMatricule(matricule);
         return optionalStudent.orElseThrow(() -> new RuntimeException("Aucun etudiant trouve avec ce matricule: "+matricule));
@@ -226,6 +236,8 @@ public class StudentService {
 
 
     //Methode pour faire a mise a jour des donnes d'un student
+    @Transactional
+    @CachePut(value = "student", key = "#student.id")
     public void updateStudent(Long id, Student student) {
         Student updateStudent = this.getStudentById(id);
 
@@ -272,6 +284,8 @@ public class StudentService {
 
 
     //Methode pour supprimer tous les students
+    @Transactional
+    @CacheEvict(value = "student", allEntries = true)
     public void deleteAllStudent() {
         this.studentRepo.deleteAll();
     }
@@ -279,6 +293,8 @@ public class StudentService {
 
 
     //Mehtode pour supprimer un student par id
+    @Transactional
+    @CacheEvict(value = "student", key = "#id")
     public void deleteStudentById(Long id) {
         this.studentRepo.deleteById(id);
     }

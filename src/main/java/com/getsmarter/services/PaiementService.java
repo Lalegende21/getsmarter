@@ -6,8 +6,12 @@ import com.getsmarter.repositories.PaiementRepo;
 import com.getsmarter.repositories.StudentRepo;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -91,6 +95,8 @@ public class PaiementService {
 
 
     //Methode pour recuperer tous les paiements
+    @Transactional(readOnly = true)
+    @Cacheable(value = "paiement")
     public List<Paiement> getAllPaiement() {
         //Afficher les resultats de la base de donne par ordre decroissant
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
@@ -110,6 +116,8 @@ public class PaiementService {
 
 
     //Methode pour recuperer un paiement par son id
+    @Transactional(readOnly = true)
+    @Cacheable(value = "paiement", key = "#id")
     public Paiement getPaiementById(Long id) {
         Optional<Paiement> optionalPaiement = this.paiementRepo.findById(id);
         return optionalPaiement.orElseThrow(() -> new EntityNotFoundException("Paiement with id: " +id+ " not found !"));
@@ -117,6 +125,8 @@ public class PaiementService {
 
 
     //Methode pour update un paiement
+    @Transactional
+    @CachePut(value = "paiement", key = "#paiement.id")
     public void updatePaiement(Long id, Paiement paiement) {
         Paiement updatePaiement = this.getPaiementById(id);
 
@@ -134,12 +144,16 @@ public class PaiementService {
 
 
     //Methode pour supprimer tous les paiements
+    @Transactional
+    @CacheEvict(value = "paiement", allEntries = true)
     public void deleteAllPaiement() {
         this.paiementRepo.deleteAll();
     }
 
 
     //Methode pour supprimer un paiement par id
+    @Transactional
+    @CacheEvict(value = "paiement", key = "#id")
     public void deletepaiementById(Long id) {
         this.paiementRepo.deleteById(id);
     }

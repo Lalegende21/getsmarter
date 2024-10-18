@@ -7,8 +7,12 @@ import com.getsmarter.entities.Student;
 import com.getsmarter.repositories.SessionRepo;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -28,6 +32,8 @@ public class SessionService {
     }
 
 
+    @Transactional(readOnly = true)
+    @Cacheable(value = "session")
     public List<Session> getAllSession() {
         //Afficher les resultats de la base de donne par ordre decroissant
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
@@ -47,12 +53,16 @@ public class SessionService {
     }
 
 
+    @Transactional(readOnly = true)
+    @Cacheable(value = "session", key = "#id")
     public Session getSessionById(Long id) {
         Optional<Session> optionalSession = this.sessionRepo.findById(id);
         return optionalSession.orElseThrow(() -> new RuntimeException("Aucune session avec cet identifiant trouvee !"));
     }
 
 
+    @Transactional
+    @CachePut(value = "session", key = "#session.id")
     public void updateSession(Long id, Session session) {
         Session updateSession = this.getSessionById(id);
 
@@ -65,11 +75,15 @@ public class SessionService {
         }
     }
 
+    @Transactional
+    @CacheEvict(value = "session", allEntries = true)
     public void deleteAllSession() {
         this.sessionRepo.deleteAll();
     }
 
 
+    @Transactional
+    @CacheEvict(value = "session", key = "#id")
     public void deleteSessionById(Long id) {
         this.sessionRepo.deleteById(id);
     }

@@ -9,8 +9,12 @@ import com.getsmarter.repositories.CourseRepo;
 import com.getsmarter.repositories.StartCourseRepo;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -115,6 +119,8 @@ public class CourseService {
 
 
     //Methode pour recuperer tous les cours
+    @Transactional(readOnly = true)
+    @Cacheable(value = "course")
     public List<Course> getAllCourse() {
         //Afficher les resultats de la base de donne par ordre decroissant
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
@@ -137,6 +143,8 @@ public class CourseService {
 
 
     //Methode pour recuperer un cours par son id
+    @Transactional(readOnly = true)
+    @Cacheable(value = "course", key = "#id")
     public Course getCourseById(Long id) {
         Optional<Course> optionalCourse = this.courseRepo.findById(id);
         return optionalCourse.orElseThrow(() -> new EntityNotFoundException("Aucune matiere trouvee avec cet identifiant !"));
@@ -144,6 +152,8 @@ public class CourseService {
 
 
     //Methode pour modifier un cours
+    @Transactional
+    @CachePut(value = "course", key = "#course.id")
     public void updateCourse(Long id, Course course) {
         Course updateCourse = this.getCourseById(id);
 
@@ -161,12 +171,16 @@ public class CourseService {
 
 
     //Methode pour supprimer tous les cours
+    @Transactional
+    @CacheEvict(value = "course", allEntries = true)
     public void deleteAllCourse() {
         this.courseRepo.deleteAll();
     }
 
 
     //Methode pour supprimer un cours son id
+    @Transactional
+    @CacheEvict(value = "course", key = "#id")
     public void deleteCourseById(Long id) {
         Optional<Course> optionalCourse = this.courseRepo.findById(id);
         if (optionalCourse.isPresent()) {
